@@ -3,10 +3,9 @@
 
 # pre requisite 1
 
-at source
-! generate ssh-keygen
+- at source generate ssh-keygen
 $ ssh-keygen -t rsa
-! copy RSA_ID
+- copy RSA_ID
 ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera01
 ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera02
 ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera03

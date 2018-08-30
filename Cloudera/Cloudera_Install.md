@@ -39,11 +39,11 @@
 
 ## pre-requisite (resolve hostname)
 * edit /etc/hosts
-`<
-* 192.168.1.1 cloudera01 cloudera01
-* 192.168.1.2 cloudera02 cloudera02
-* 192.168.1.3 cloudera03 cloudera03
->`
+
+ 192.168.1.1 cloudera01 cloudera01
+ 192.168.1.2 cloudera02 cloudera02
+ 192.168.1.3 cloudera03 cloudera03
+
 
 ## pre-requisite (create user)
 
@@ -51,15 +51,15 @@
 useradd -g wheel -mn clouderainstall
 
 * add user to wheel group, or sudoers
-
-`< 
-## Allows people in group wheel to run all commands
+  - visudo
+ 
+Allows people in group wheel to run all commands
 %wheel  ALL=(ALL)       ALL
 %group ALL=(ALL)       ALL
-## Same thing without a password
+Same thing without a password
 %wheel  ALL=(ALL)       NOPASSWD: ALL
 %group	ALL=(ALL)       NOPASSWD: ALL
->`
+
 
 ## pre-requisite (install repository database)
 * create mariadb repo at /etc/yum.repos.d/mariadb.repo

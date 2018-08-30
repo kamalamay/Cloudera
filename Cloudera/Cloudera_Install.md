@@ -6,14 +6,14 @@
 - at source generate ssh-keygen
 $ ssh-keygen -t rsa
 - copy RSA_ID
-ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera01
-ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera02
-ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera03
-ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@bakcloudera03
-ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@talend01
-ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera05
-ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera06
-ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera07
+-- ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera01
+-- ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera02
+-- ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera03
+-- ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@bakcloudera03
+-- ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@talend01
+-- ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera05
+-- ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera06
+-- ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera07
 
 #download and install java mysql connector
 !download java

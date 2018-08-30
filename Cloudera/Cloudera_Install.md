@@ -53,7 +53,7 @@ useradd -g wheel -mn clouderainstall
 * add user to wheel group, or sudoers
   - visudo
  
-Allows people in group wheel to run all commands
+  - Allows people in group wheel to run all commands
 %wheel  ALL=(ALL)       ALL
 %group ALL=(ALL)       ALL
 Same thing without a password
@@ -64,7 +64,7 @@ Same thing without a password
 ## pre-requisite (install repository database)
 * create mariadb repo at /etc/yum.repos.d/mariadb.repo:
 
-[mariadb]
+  - [mariadb]
 name = MariaDB-5.5.60
 baseurl=https://downloads.mariadb.com/MariaDB/mariadb-5.5.60/yum/rhel73-amd64/
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
@@ -117,8 +117,7 @@ gpgcheck=1
 
   - repolist cloudera manager
 
-[cloudera-manager]
-# Packages for Cloudera Manager, Version 5, on RedHat or CentOS 6 x86_64
+  - [cloudera-manager]
 name=Cloudera Manager
 baseurl=http://192.168.129.49/cm5/redhat/7/x86_64/cm/5.14.3/
 gpgkey =http://192.168.129.49/cm5/redhat/7/x86_64/cm/RPM-GPG-KEY-cloudera

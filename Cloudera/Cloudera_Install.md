@@ -119,8 +119,8 @@ gpgcheck=1
 
   - [cloudera-manager]
 name=Cloudera Manager
-baseurl=http://192.168.129.49/cm5/redhat/7/x86_64/cm/5.14.3/
-gpgkey =http://192.168.129.49/cm5/redhat/7/x86_64/cm/RPM-GPG-KEY-cloudera
+baseurl=http://192.168.1.1/cm5/redhat/7/x86_64/cm/5.14.3/
+gpgkey =http://192.168.1.1/cm5/redhat/7/x86_64/cm/RPM-GPG-KEY-cloudera
 gpgcheck = 0
 
 
@@ -131,12 +131,12 @@ name=CentOS-7 x86_64
 metadata_expire=-1
 gpgcheck=1
 cost=500
-baseurl=http://192.168.129.49/centos2/Packages
-gpgkey =http://192.168.129.49/centos2/RPM-GPG-KEY-CentOS-7
+baseurl=http://192.168.1.1/centos2/Packages
+gpgkey =http://192.168.1.1/centos2/RPM-GPG-KEY-CentOS-7
 enabled=1 
 
 * test http service 
-  - curl http://192.168.129.49/cm5/redhat/7/x86_64/cm/5.14.3/
+  - curl http://192.168.1.1/cm5/redhat/7/x86_64/cm/5.14.3/
   - yum repolist
 
 

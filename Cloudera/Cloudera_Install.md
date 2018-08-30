@@ -46,13 +46,10 @@
 
 
 ## pre-requisite (create user)
-
 * create new user and group
 useradd -g wheel -mn clouderainstall
-
 * add user to wheel group, or sudoers
   - visudo
- 
   - Allows people in group wheel to run all commands
 %wheel  ALL=(ALL)       ALL
 %group ALL=(ALL)       ALL
@@ -63,14 +60,11 @@ Same thing without a password
 
 ## pre-requisite (install repository database)
 * create mariadb repo at /etc/yum.repos.d/mariadb.repo:
-
   - [mariadb]
 name = MariaDB-5.5.60
 baseurl=https://downloads.mariadb.com/MariaDB/mariadb-5.5.60/yum/rhel73-amd64/
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
-
-
 * install mariadb
   - yum install mariadb-server
 * start mysql/mariadb
@@ -81,28 +75,22 @@ gpgcheck=1
   - grant all on scm.* TO 'scm'@'%' IDENTIFIED BY 'scm';
   - grant all on scm.* TO 'scm'@'localhost' IDENTIFIED BY 'scm';
   - grant all on scm.* TO 'scm'@'192.168.1.1' IDENTIFIED BY 'scm';
-
-
   - create database rman DEFAULT CHARACTER SET utf8;
   - grant all on rman.* TO 'rman'@'%' IDENTIFIED BY 'rman';
   - grant all on rman.* TO 'rman'@'localhost' IDENTIFIED BY 'rman';
   - grant all on rman.* TO 'rman'@'192.168.1.1' IDENTIFIED BY 'rman';
-
   - create database hive DEFAULT CHARACTER SET utf8;
   - grant all on hive.* TO 'hive'@'%' IDENTIFIED BY 'hive';
   - grant all on hive.* TO 'hive'@'localhost' IDENTIFIED BY 'hive';
   - grant all on hive.* TO 'hive'@'192.168.1.1' IDENTIFIED BY 'hive';
-
   - create database oozie DEFAULT CHARACTER SET utf8;
   - grant all on oozie.* TO 'oozie'@'%' IDENTIFIED BY 'oozie';
   - grant all on oozie.* TO 'oozie'@'localhost' IDENTIFIED BY 'oozie';
   - grant all on oozie.* TO 'oozie'@'192.168.1.1' IDENTIFIED BY 'oozie';
-
   - create database hue DEFAULT CHARACTER SET utf8;
   - grant all on hue.* TO 'hue'@'%' IDENTIFIED BY 'hue';
   - grant all on hue.* TO 'hue'@'localhost' IDENTIFIED BY 'hue';
   - grant all on hue.* TO 'hue'@'192.168.1.1' IDENTIFIED BY 'hue';
-
 
 ## pre-requisite (create local repository)
 * install webserver

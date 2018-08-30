@@ -1,7 +1,7 @@
 # Cloudera Installation tutorial
 
 
-# pre requisite 1
+# pre-requisite (shake hand)
 
 * at source generate ssh-keygen
   - $ ssh-keygen -t rsa
@@ -15,17 +15,18 @@
   - ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera06
   - ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera07
 
-#download and install java mysql connector
-!download java
-wget http://download.oracle.com/otn-pub/java/jdk/8u171-b11/512cd62ec5174c3487ac17c61aaa89e8/jdk-8u171-linux-x64.rpm?AuthParam=1529219456_b42e4bc703370e93d49289de4304f238
-mv http://download.oracle.com/otn-pub/java/jdk/8u171-b11/512cd62ec5174c3487ac17c61aaa89e8/jdk-8u171-linux-x64.rpm?AuthParam=1529219456_b42e4bc703370e93d49289de4304f238 jdk-8u171-linux-x64.rpm
-!atau copy ke server
-scp jdk-8u171-linux-x64.rpm clouderainstall@cloudera02:/home/clouderainstall/jdk-8u171-linux-x64.rpm
+# pre-requisite (download and install java, mysql connector)
+* download java
+  - wget http://download.oracle.com/otn-pub/java/jdk/8u171-b11/512cd62ec5174c3487ac17c61aaa89e8/jdk-8u171-linux-x64.rpm?AuthParam=1529219456_b42e4bc703370e93d49289de4304f238
+* rename downloaded file
+  - mv http://download.oracle.com/otn-pub/java/jdk/8u171-b11/512cd62ec5174c3487ac17c61aaa89e8/jdk-8u171-linux-x64.rpm?AuthParam=1529219456_b42e4bc703370e93d49289de4304f238 jdk-8u171-linux-x64.rpm
+* copy to another server
+  - scp jdk-8u171-linux-x64.rpm clouderainstall@cloudera02:/home/clouderainstall/jdk-8u171-linux-x64.rpm
 
-!remove openjdk
-yum remove java
-!install jdk1.8 oracle
-yum install jdk-8u171-linux-x64.rpm
+* remove openjdk
+  - yum remove java
+* install jdk1.8 oracle
+  - yum install jdk-8u171-linux-x64.rpm
 
 !download mysql connector
 mkdir -p /usr/share/java/

@@ -37,36 +37,40 @@
   - scp mysql-connector-java-5.1.46-bin.jar clouderainstall@cloudera02:/home/clouderainstall/mysql-connector-java-5.1.46-bin.jar
 
 
-## pre-requisite (shake hand)
+## pre-requisite (resolve hostname)
 * edit /etc/hosts
-`<192.168.129.49 cloudera01 cloudera01
-192.168.88.5 cloudera02 cloudera02
-192.168.88.6 cloudera03 cloudera03>`
+`<
+* 192.168.1.1 cloudera01 cloudera01
+* 192.168.1.2 cloudera02 cloudera02
+* 192.168.1.3 cloudera03 cloudera03
+>`
 
-192.168.129.49 cm514 cm514
-192.168.129.51 DN001 DN001
-192.168.129.52 DN002 DN002
-192.168.129.53 DN003 DN003
-192.168.129.55 DN005 DN005
+## pre-requisite (create user)
 
-#create user
+* create new user and group
 useradd -g wheel -mn clouderainstall
-passwd clouderainstall = cloudera
-!masukin group wheel ke user yang dipakai buat install, atau masukin group list usernya ke visudo
+
+* add user to wheel group, or sudoers
+
+`< 
 ## Allows people in group wheel to run all commands
 %wheel  ALL=(ALL)       ALL
 %group ALL=(ALL)       ALL
 ## Same thing without a password
 %wheel  ALL=(ALL)       NOPASSWD: ALL
 %group	ALL=(ALL)       NOPASSWD: ALL
+>`
 
-#install mariaDB
-!buat repo mariadb di /etc/yum.repos.d/mariadb.repo
+## pre-requisite (install repository database)
+* create mariadb repo at /etc/yum.repos.d/mariadb.repo
+`<
 [mariadb]
 name = MariaDB-5.5.60
 baseurl=https://downloads.mariadb.com/MariaDB/mariadb-5.5.60/yum/rhel73-amd64/
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
+>`
+
 !install mariadb
 yum install mariadb-server
 !start mysql/mariadb

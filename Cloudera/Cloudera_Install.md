@@ -1,7 +1,7 @@
 # Cloudera Installation tutorial
 
 
-# pre-requisite (shake hand)
+## pre-requisite (shake hand)
 
 * at source generate ssh-keygen
   - $ ssh-keygen -t rsa
@@ -15,7 +15,7 @@
   - ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera06
   - ssh-copy-id -i /home/clouderainstall/.ssh/id_rsa.pub clouderainstall@cloudera07
 
-# pre-requisite (download and install java, mysql connector)
+## pre-requisite (download and install java, mysql connector)
 * download java
   - wget http://download.oracle.com/otn-pub/java/jdk/8u171-b11/512cd62ec5174c3487ac17c61aaa89e8/jdk-8u171-linux-x64.rpm?AuthParam=1529219456_b42e4bc703370e93d49289de4304f238
 * rename downloaded file
@@ -28,38 +28,20 @@
 * install jdk1.8 oracle
   - yum install jdk-8u171-linux-x64.rpm
 
-!download mysql connector
-mkdir -p /usr/share/java/
-wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.46.tar.gz
-tar -xzvf mysql-connector-java-5.1.46.tar.gz
-cp mysql-connector-java-5.1.46/mysql-connector-java-5.1.46-bin.jar /usr/share/java/mysql-connector-java.jar
-!atau scp dari server yang sudah ada
-scp mysql-connector-java-5.1.46-bin.jar clouderainstall@cloudera02:/home/clouderainstall/mysql-connector-java-5.1.46-bin.jar
-
-!hdd ada 30GB /, 2x500GB /dfs, 20GB /opt
-!yang dfs di RAID0 (ntah lah katanya biar iops nya kenceng)
-mdadm --create --verbose /dev/md0 --level=0 --raid-devices=2 /dev/sdc /dev/sdd
-mkfs.xfs /dev/md0
-mkdir /dfs
-mount /dev/md0 /dfs
-
-fdisk /dev/sde
-mkfs.xfs /dev/sde1
-mount /dev/sde1 /opt
-
-!masukin /etc/fstab
-/dev/md0        /dfs            xfs     defaults        0    0
-/dev/sdd1       /opt            xfs     defaults        0    0
-
-!fuck disk nya ketuker tuker
-
-blkid /dev/sd*
+* download mysql connector
+  - mkdir -p /usr/share/java/
+  - wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.46.tar.gz
+  - tar -xzvf mysql-connector-java-5.1.46.tar.gz
+  - cp mysql-connector-java-5.1.46/mysql-connector-java-5.1.46-bin.jar /usr/share/java/mysql-connector-java.jar
+* or copy from another server
+  - scp mysql-connector-java-5.1.46-bin.jar clouderainstall@cloudera02:/home/clouderainstall/mysql-connector-java-5.1.46-bin.jar
 
 
-#/etc/hosts
-192.168.129.49 cloudera01 cloudera01
+## pre-requisite (shake hand)
+* edit /etc/hosts
+`<192.168.129.49 cloudera01 cloudera01
 192.168.88.5 cloudera02 cloudera02
-192.168.88.6 cloudera03 cloudera03
+192.168.88.6 cloudera03 cloudera03>`
 
 192.168.129.49 cm514 cm514
 192.168.129.51 DN001 DN001

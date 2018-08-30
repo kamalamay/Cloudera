@@ -19,15 +19,13 @@
 * download java
   - wget http://download.oracle.com/otn-pub/java/jdk/8u171-b11/512cd62ec5174c3487ac17c61aaa89e8/jdk-8u171-linux-x64.rpm?AuthParam=1529219456_b42e4bc703370e93d49289de4304f238
 * rename downloaded file
-  - mv http://download.oracle.com/otn-pub/java/jdk/8u171-b11/512cd62ec5174c3487ac17c61aaa89e8/jdk-8u171-linux-x64.rpm?AuthParam=1529219456_b42e4bc703370e93d49289de4304f238 jdk-8u171-linux-x64.rpm
-* copy to another server
+  - mv jdk-8u171-linux-x64.rpm?AuthParam=1529219456_b42e4bc703370e93d49289de4304f238 jdk-8u171-linux-x64.rpm
+* or copy from another server
   - scp jdk-8u171-linux-x64.rpm clouderainstall@cloudera02:/home/clouderainstall/jdk-8u171-linux-x64.rpm
-
 * remove openjdk
   - yum remove java
 * install jdk1.8 oracle
   - yum install jdk-8u171-linux-x64.rpm
-
 * download mysql connector
   - mkdir -p /usr/share/java/
   - wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.46.tar.gz
@@ -39,10 +37,9 @@
 
 ## pre-requisite (resolve hostname)
 * edit /etc/hosts
-
- 192.168.1.1 cloudera01 cloudera01
- 192.168.1.2 cloudera02 cloudera02
- 192.168.1.3 cloudera03 cloudera03
+  - 192.168.1.1 cloudera01 cloudera01
+  - 192.168.1.2 cloudera02 cloudera02
+  - 192.168.1.3 cloudera03 cloudera03
 
 
 ## pre-requisite (create user)

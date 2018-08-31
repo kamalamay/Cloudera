@@ -1,0 +1,971 @@
+#################################################################
+### Oracle RAC 12.2.0.1 Installation on Red Hat 7.3 by AzizPW ###
+### Technical Consultant ########################################
+### PT Mitra Integrasi Informatika ##############################
+#################################################################
+### PoC RAC 12cR2 on Oracle VM HPE Superdome ####################
+### Bank Indonesia - Bimasakti ##################################
+### Tue, 03 July 2018 ###########################################
+#################################################################
+
+Reference:
+https://oracle-base.com/articles/12c/oracle-db-12cr2-rac-installation-on-oracle-linux-7-using-virtualbox
+
+### IP Public eth0
+##################
+[root@racnode1 ~]# cat /etc/sysconfig/network-scripts/ifcfg-eth0
+TYPE="Ethernet"
+BOOTPROTO="none"
+DEFROUTE="yes"
+IPV4_FAILURE_FATAL="no"
+IPV6INIT="yes"
+IPV6_AUTOCONF="yes"
+IPV6_DEFROUTE="yes"
+IPV6_FAILURE_FATAL="no"
+IPV6_ADDR_GEN_MODE="stable-privacy"
+NAME="eth0"
+UUID="3c5935b2-d985-4dad-94f6-66e82d879174"
+DEVICE="eth0"
+ONBOOT="yes"
+IPADDR=10.85.232.35
+PREFIX=21
+GATEWAY=10.85.236.254
+DNS1=10.85.236.131
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_PRIVACY=no
+[root@racnode1 ~]#
+
+: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 00:21:f6:1b:a2:0b brd ff:ff:ff:ff:ff:ff
+
+### Config IP Private on eth1 on All RAC Nodes ==> no gateway and no DNS for private
+##############################################
+
+[root@racnode1 ~]# nano /etc/sysconfig/network-scripts/ifcfg-eth1
+=================================================================
+DEVICE="eth1"
+BOOTPROTO="none"
+ONBOOT="yes"
+PREFIX=24
+IPADDR=172.16.45.101
+
+[root@racnode2 ~]# nano /etc/sysconfig/network-scripts/ifcfg-eth1
+=================================================================
+DEVICE="eth1"
+BOOTPROTO="none"
+ONBOOT="yes"
+PREFIX=24
+IPADDR=172.16.45.102
+
+### Restart network on All RAC Nodes
+####################################
+# systemctl restart network
+
+### Config /etc/hosts on All RAC Nodes
+######################################
+nano /etc/hosts
+===============
+10.85.232.35 racnode1.sgcpc.local racnode1
+10.85.232.37 racnode1-vip.sgcpc.local racnode1-vip
+172.16.45.101 racnode1-priv.sgcpc.local racnode1-priv
+10.85.232.36 racnode2.sgcpc.local racnode2
+10.85.232.38 racnode2-vip.sgcpc.local racnode2-vip
+172.16.45.102 racnode2-priv.sgcpc.local racnode2-priv
+#10.85.232.39 rac-scan.sgcpc.local rac-scan
+#10.85.232.40 rac-scan.sgcpc.local rac-scan
+#10.85.232.30 rac-scan.sgcpc.local rac-scan
+
+### Config Fully Qualified Domain Name on All RAC Nodes
+#######################################################
+[root@racnode1 ~]# hostnamectl set-hostname racnode1.sgcpc.local --static; hostnamectl status;
+   Static hostname: racnode1.sgcpc.local
+Transient hostname: racnode1
+         Icon name: computer-vm
+           Chassis: vm
+        Machine ID: 6d9682e1832042a899140fe6742b06c8
+           Boot ID: 17abaea636ab479ab2f1628e30a6552c
+    Virtualization: xen
+  Operating System: Red Hat Enterprise Linux Server 7.3 (Maipo)
+       CPE OS Name: cpe:/o:redhat:enterprise_linux:7.3:GA:server
+            Kernel: Linux 3.10.0-514.el7.x86_64
+      Architecture: x86-64
+[root@racnode1 ~]#
+
+[root@racnode2 ~]# hostnamectl set-hostname racnode2.sgcpc.local --static; hostnamectl status;
+   Static hostname: racnode2.sgcpc.local
+Transient hostname: racnode2
+         Icon name: computer-vm
+           Chassis: vm
+        Machine ID: 6d9682e1832042a899140fe6742b06c8
+           Boot ID: 7047c698dfa74b309b6a4b30a61ee9c6
+    Virtualization: xen
+  Operating System: Red Hat Enterprise Linux Server 7.3 (Maipo)
+       CPE OS Name: cpe:/o:redhat:enterprise_linux:7.3:GA:server
+            Kernel: Linux 3.10.0-514.el7.x86_64
+      Architecture: x86-64
+[root@racnode2 ~]#
+
+### Stop and Disable Firewall on All RAC Nodes
+##############################################
+# systemctl stop firewalld
+# systemctl disable firewalld
+
+### Install RPM Packages on All RAC Nodes
+#########################################
+yum install binutils -y
+yum install compat-libstdc++-33 -y ==> No available in local repo
+yum install compat-libstdc++-33.i686 -y ==> No available in local repo
+yum install gcc -y
+yum install gcc-c++ -y
+yum install glibc -y
+yum install glibc.i686 -y
+yum install glibc-devel -y
+yum install glibc-devel.i686 -y
+yum install ksh -y
+yum install libgcc -y
+yum install libgcc.i686 -y
+yum install libstdc++ -y
+yum install libstdc++.i686 -y
+yum install libstdc++-devel -y
+yum install libstdc++-devel.i686 -y
+yum install libaio -y
+yum install libaio.i686 -y
+yum install libaio-devel -y
+yum install libaio-devel.i686 -y
+yum install libXext -y
+yum install libXext.i686 -y
+yum install libXtst -y
+yum install libXtst.i686 -y
+yum install libX11 -y
+yum install libX11.i686 -y
+yum install libXau -y
+yum install libXau.i686 -y
+yum install libxcb -y
+yum install libxcb.i686 -y
+yum install libXi -y
+yum install libXi.i686 -y
+yum install make -y
+yum install sysstat -y
+yum install unixODBC -y
+yum install unixODBC-devel -y
+yum install zlib-devel -y
+yum install zlib-devel.i686 -y
+yum install vnc-server -y
+
+[root@racnode1 ~]# rpm -Uvh compat-libstdc++-33-3.2.3-72.el7.x86_64.rpm 
+warning: compat-libstdc++-33-3.2.3-72.el7.x86_64.rpm: Header V3 RSA/SHA256 Signature, key ID f4a80eb5: NOKEY
+Preparing...                          ################################# [100%]
+Updating / installing...
+   1:compat-libstdc++-33-3.2.3-72.el7 ################################# [100%]
+[root@racnode1 ~]# rpm -Uvh compat-libstdc++-33-3.2.3-72.el7.i686.rpm 
+warning: compat-libstdc++-33-3.2.3-72.el7.i686.rpm: Header V3 RSA/SHA256 Signature, key ID f4a80eb5: NOKEY
+Preparing...                          ################################# [100%]
+Updating / installing...
+   1:compat-libstdc++-33-3.2.3-72.el7 ################################# [100%]
+[root@racnode1 ~]#
+
+[root@racnode2 ~]# rpm -Uvh compat-libstdc++-33-3.2.3-72.el7.x86_64.rpm 
+warning: compat-libstdc++-33-3.2.3-72.el7.x86_64.rpm: Header V3 RSA/SHA256 Signature, key ID f4a80eb5: NOKEY
+Preparing...                          ################################# [100%]
+Updating / installing...
+   1:compat-libstdc++-33-3.2.3-72.el7 ################################# [100%]
+[root@racnode2 ~]# rpm -Uvh compat-libstdc++-33-3.2.3-72.el7.i686.rpm 
+warning: compat-libstdc++-33-3.2.3-72.el7.i686.rpm: Header V3 RSA/SHA256 Signature, key ID f4a80eb5: NOKEY
+Preparing...                          ################################# [100%]
+Updating / installing...
+   1:compat-libstdc++-33-3.2.3-72.el7 ################################# [100%]
+[root@racnode2 ~]#
+
+### Config sysconfig on Both Nodes
+##################################
+nano /etc/sysctl.conf
+=====================
+# Oracle RAC configuration at 20180704 by PT Mitra Integrasi Informatika
+fs.file-max = 6815744
+kernel.sem = 250 32000 100 128
+kernel.shmmni = 4096
+kernel.shmall = 1073741824
+kernel.shmmax = 4398046511104
+kernel.panic_on_oops = 1
+net.core.rmem_default = 262144
+net.core.rmem_max = 4194304
+net.core.wmem_default = 262144
+net.core.wmem_max = 1048576
+net.ipv4.conf.all.rp_filter = 2
+net.ipv4.conf.default.rp_filter = 2
+fs.aio-max-nr = 1048576
+net.ipv4.ip_local_port_range = 9000 65500
+
+### Apply Config sysctl on All RAC Nodes
+########################################
+# /sbin/sysctl -p
+
+### Config ulimit on All RAC Nodes
+##################################
+nano /etc/security/limits.d/oracle-database-server-12cR2-preinstall.conf
+========================================================================
+oracle   soft   nofile    1024
+oracle   hard   nofile    65536
+oracle   soft   nproc    16384
+oracle   hard   nproc    16384
+oracle   soft   stack    10240
+oracle   hard   stack    32768
+oracle   hard   memlock    134217728
+oracle   soft   memlock    134217728
+
+### Add Groups on All RAC Nodes
+###############################
+# groupadd -g 54321 oinstall; groupadd -g 54322 dba; groupadd -g 54323 oper; groupadd -g 54324 bckpdba; groupadd -g 54325 dgdba; groupadd -g 54326 kmdba; groupadd -g 54327 asmdba; groupadd -g 54328 asmoper; groupadd -g 54329 asmadmin; groupadd -g 54330 racdba;
+
+### Add User on All RAC Nodes
+#############################
+# useradd -g oinstall -G dba,oper,bckpdba,dgdba,kmdba,asmdba,asmoper,asmadmin,racdba oracle
+# passwd oracle
+Oracle#123
+
+### Config resolv.conf on All RAC Nodes
+#######################################
+nano /etc/resolv.conf
+=====================
+search sgcpc.local
+nameserver 10.85.236.131
+
+### Test SCAN on All RAC Nodes
+##############################
+[root@racnode1 ~]# nslookup rac-scan.sgcpc.local
+Server:		10.85.236.131
+Address:	10.85.236.131#53
+
+Name:	rac-scan.sgcpc.local
+Address: 10.85.232.30
+Name:	rac-scan.sgcpc.local
+Address: 10.85.232.39
+Name:	rac-scan.sgcpc.local
+Address: 10.85.232.40
+
+[root@racnode1 ~]#
+
+[root@racnode2 ~]# nslookup rac-scan.sgcpc.local
+Server:		10.85.236.131
+Address:	10.85.236.131#53
+
+Name:	rac-scan.sgcpc.local
+Address: 10.85.232.40
+Name:	rac-scan.sgcpc.local
+Address: 10.85.232.39
+Name:	rac-scan.sgcpc.local
+Address: 10.85.232.30
+
+[root@racnode2 ~]#
+
+### Config SELINUX on All RAC Nodes
+###################################
+nano /etc/selinux/config
+========================
+SELINUX=permissive
+
+### Start NTP on All RAC Nodes
+##############################
+# systemctl enable chronyd.service
+# systemctl start chronyd.service
+# systemctl status chronyd.service
+
+### Create Directory and Change Permission on All RAC Nodes
+###########################################################
+mkdir -p /u01/app/12.2.0.1/grid; mkdir -p /u01/app/oracle/product/12.2.0.1/db_1; chown -R oracle:oinstall /u01; chmod -R 775 /u01;
+
+### Create GI and DB Environment on All RAC Nodes
+#################################################
+nano grid_profile
+=================
+# Grid Infrastructure Settings
+export TMP=/tmp
+export TMPDIR=$TMP
+export ORACLE_HOSTNAME=racnode1.sgcpc.local
+export ORACLE_BASE=/u01/app/oracle
+export ORACLE_HOME=/u01/app/12.2.0.1/grid
+export ORACLE_SID=+ASM1
+export ORACLE_TERM=xterm
+export BASE_PATH=/usr/sbin:$PATH
+export PATH=$ORACLE_HOME/bin:$BASE_PATH
+export LD_LIBRARY_PATH=$ORACLE_HOME/lib:/lib:/usr/lib
+export CLASSPATH=$ORACLE_HOME/JRE:$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib
+
+nano db_profile
+===============
+# Oracle Database Settings
+export TMP=/tmp
+export TMPDIR=$TMP
+export ORACLE_HOSTNAME=racnode1.sgcpc.local
+export ORACLE_BASE=/u01/app/oracle
+export ORACLE_HOME=$ORACLE_BASE/product/12.2.0.1/db_1
+export ORACLE_UNQNAME=RACDB
+export ORACLE_SID=RACDB1
+export BASE_PATH=/usr/sbin:$PATH
+export PATH=$ORACLE_HOME/bin:$BASE_PATH
+export LD_LIBRARY_PATH=$ORACLE_HOME/lib:/lib:/usr/lib
+export CLASSPATH=$ORACLE_HOME/JRE:$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib
+
+nano grid_profile
+=================
+# Grid Infrastructure Settings
+export TMP=/tmp
+export TMPDIR=$TMP
+export ORACLE_HOSTNAME=racnode2.sgcpc.local
+export ORACLE_BASE=/u01/app/oracle
+export ORACLE_HOME=/u01/app/12.2.0.1/grid
+export ORACLE_SID=+ASM2
+export ORACLE_TERM=xterm
+export BASE_PATH=/usr/sbin:$PATH
+export PATH=$ORACLE_HOME/bin:$BASE_PATH
+export LD_LIBRARY_PATH=$ORACLE_HOME/lib:/lib:/usr/lib
+export CLASSPATH=$ORACLE_HOME/JRE:$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib
+
+nano db_profile
+===============
+# Oracle Database Settings
+export TMP=/tmp
+export TMPDIR=$TMP
+export ORACLE_HOSTNAME=racnode2.sgcpc.local
+export ORACLE_BASE=/u01/app/oracle
+export ORACLE_HOME=$ORACLE_BASE/product/12.2.0.1/db_1
+export ORACLE_UNQNAME=RACDB
+export ORACLE_SID=RACDB2
+export BASE_PATH=/usr/sbin:$PATH
+export PATH=$ORACLE_HOME/bin:$BASE_PATH
+export LD_LIBRARY_PATH=$ORACLE_HOME/lib:/lib:/usr/lib
+export CLASSPATH=$ORACLE_HOME/JRE:$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib
+
+### 20180705
+############
+
+### List Disk ASM on All RAC Nodes
+##################################
+[root@racnode1 ~]# cd /dev/
+[root@racnode1 dev]# ls -lh xvd*
+brw-rw----. 1 root disk 202,  16 Jun 29 20:59 xvdb
+brw-rw----. 1 root disk 202,  17 Jun 29 20:59 xvdb1
+brw-rw----. 1 root disk 202,  18 Jun 29 20:59 xvdb2
+brw-rw----. 1 root disk 202,  32 Jun 29 20:58 xvdc
+brw-rw----. 1 root disk 202,  48 Jun 29 20:58 xvdd
+brw-rw----. 1 root disk 202,  64 Jun 29 20:58 xvde
+brw-rw----. 1 root disk 202,  80 Jun 29 20:58 xvdf
+brw-rw----. 1 root disk 202,  96 Jun 29 20:58 xvdg
+brw-rw----. 1 root disk 202, 112 Jun 29 20:58 xvdh
+brw-rw----. 1 root disk 202, 128 Jun 29 20:58 xvdi
+brw-rw----. 1 root disk 202, 144 Jun 29 20:58 xvdj
+[root@racnode1 dev]#
+
+### Summary of fdisk on All RAC Nodes
+#####################################
+Disk /dev/xvdc: 429.5 GB
+Disk /dev/xvdd: 214.7 GB
+Disk /dev/xvde: 161.1 GB
+Disk /dev/xvdf: 10.7 GB
+Disk /dev/xvdg: 10.7 GB
+Disk /dev/xvdh: 10.7 GB
+Disk /dev/xvdi: 10.7 GB
+Disk /dev/xvdj: 10.7 GB
+
+### Partition ASM Disk on racnode1 only
+#######################################
+fdisk /dev/xvdc
+fdisk /dev/xvdd
+fdisk /dev/xvde
+fdisk /dev/xvdf
+fdisk /dev/xvdg
+fdisk /dev/xvdh
+fdisk /dev/xvdi
+fdisk /dev/xvdj
+
+### Make Sure The Disks Have Been Partitioned on All RAC Nodes
+##############################################################
+[root@racnode1 dev]# ls -lh /dev/xvd*
+brw-rw----. 1 root disk 202,  16 Jun 29 20:59 /dev/xvdb
+brw-rw----. 1 root disk 202,  17 Jun 29 20:59 /dev/xvdb1
+brw-rw----. 1 root disk 202,  18 Jun 29 20:59 /dev/xvdb2
+brw-rw----. 1 root disk 202,  32 Jul  5 18:33 /dev/xvdc
+brw-rw----. 1 root disk 202,  33 Jul  5 18:33 /dev/xvdc1
+brw-rw----. 1 root disk 202,  48 Jul  5 18:34 /dev/xvdd
+brw-rw----. 1 root disk 202,  49 Jul  5 18:34 /dev/xvdd1
+brw-rw----. 1 root disk 202,  64 Jul  5 18:34 /dev/xvde
+brw-rw----. 1 root disk 202,  65 Jul  5 18:34 /dev/xvde1
+brw-rw----. 1 root disk 202,  80 Jul  5 18:35 /dev/xvdf
+brw-rw----. 1 root disk 202,  81 Jul  5 18:35 /dev/xvdf1
+brw-rw----. 1 root disk 202,  96 Jul  5 18:35 /dev/xvdg
+brw-rw----. 1 root disk 202,  97 Jul  5 18:35 /dev/xvdg1
+brw-rw----. 1 root disk 202, 112 Jul  5 18:35 /dev/xvdh
+brw-rw----. 1 root disk 202, 113 Jul  5 18:35 /dev/xvdh1
+brw-rw----. 1 root disk 202, 128 Jul  5 18:36 /dev/xvdi
+brw-rw----. 1 root disk 202, 129 Jul  5 18:36 /dev/xvdi1
+brw-rw----. 1 root disk 202, 144 Jul  5 18:36 /dev/xvdj
+brw-rw----. 1 root disk 202, 145 Jul  5 18:36 /dev/xvdj1
+[root@racnode1 dev]#
+
+### reboot on All RAC Nodes
+###########################
+# reboot
+
+### Make Sure The Disks Have Been Partitioned on All RAC Nodes
+##############################################################
+[oracle@racnode1 ~]$ ls -lh /dev/xvd*
+brw-rw----. 1 root disk 202,  16 Jul  5 18:32 /dev/xvdb
+brw-rw----. 1 root disk 202,  17 Jul  5 18:32 /dev/xvdb1
+brw-rw----. 1 root disk 202,  18 Jul  5 18:32 /dev/xvdb2
+brw-rw----. 1 root disk 202,  32 Jul  5 18:31 /dev/xvdc
+brw-rw----. 1 root disk 202,  33 Jul  5 18:31 /dev/xvdc1
+brw-rw----. 1 root disk 202,  48 Jul  5 18:31 /dev/xvdd
+brw-rw----. 1 root disk 202,  49 Jul  5 18:31 /dev/xvdd1
+brw-rw----. 1 root disk 202,  64 Jul  5 18:31 /dev/xvde
+brw-rw----. 1 root disk 202,  65 Jul  5 18:31 /dev/xvde1
+brw-rw----. 1 root disk 202,  80 Jul  5 18:31 /dev/xvdf
+brw-rw----. 1 root disk 202,  81 Jul  5 18:31 /dev/xvdf1
+brw-rw----. 1 root disk 202,  96 Jul  5 18:31 /dev/xvdg
+brw-rw----. 1 root disk 202,  97 Jul  5 18:31 /dev/xvdg1
+brw-rw----. 1 root disk 202, 112 Jul  5 18:31 /dev/xvdh
+brw-rw----. 1 root disk 202, 113 Jul  5 18:31 /dev/xvdh1
+brw-rw----. 1 root disk 202, 128 Jul  5 18:31 /dev/xvdi
+brw-rw----. 1 root disk 202, 129 Jul  5 18:31 /dev/xvdi1
+brw-rw----. 1 root disk 202, 144 Jul  5 18:31 /dev/xvdj
+brw-rw----. 1 root disk 202, 145 Jul  5 18:31 /dev/xvdj1
+[oracle@racnode1 ~]$
+
+[oracle@racnode2 ~]$ ls -lh /dev/xvd*
+brw-rw----. 1 root disk 202,  16 Jul  5 18:36 /dev/xvdb
+brw-rw----. 1 root disk 202,  17 Jul  5 18:36 /dev/xvdb1
+brw-rw----. 1 root disk 202,  18 Jul  5 18:36 /dev/xvdb2
+brw-rw----. 1 root disk 202,  32 Jul  5 18:36 /dev/xvdc
+brw-rw----. 1 root disk 202,  33 Jul  5 18:36 /dev/xvdc1
+brw-rw----. 1 root disk 202,  48 Jul  5 18:36 /dev/xvdd
+brw-rw----. 1 root disk 202,  49 Jul  5 18:36 /dev/xvdd1
+brw-rw----. 1 root disk 202,  64 Jul  5 18:36 /dev/xvde
+brw-rw----. 1 root disk 202,  65 Jul  5 18:36 /dev/xvde1
+brw-rw----. 1 root disk 202,  80 Jul  5 18:36 /dev/xvdf
+brw-rw----. 1 root disk 202,  81 Jul  5 18:36 /dev/xvdf1
+brw-rw----. 1 root disk 202,  96 Jul  5 18:36 /dev/xvdg
+brw-rw----. 1 root disk 202,  97 Jul  5 18:36 /dev/xvdg1
+brw-rw----. 1 root disk 202, 112 Jul  5 18:36 /dev/xvdh
+brw-rw----. 1 root disk 202, 113 Jul  5 18:36 /dev/xvdh1
+brw-rw----. 1 root disk 202, 128 Jul  5 18:36 /dev/xvdi
+brw-rw----. 1 root disk 202, 129 Jul  5 18:36 /dev/xvdi1
+brw-rw----. 1 root disk 202, 144 Jul  5 18:36 /dev/xvdj
+brw-rw----. 1 root disk 202, 145 Jul  5 18:36 /dev/xvdj1
+[oracle@racnode2 ~]$
+
+### Setting udev on racnode1 Only
+#################################
+/usr/lib/udev/scsi_id -g -u -d /dev/xvdc1
+/usr/lib/udev/scsi_id -g -u -d /dev/xvdd1
+/usr/lib/udev/scsi_id -g -u -d /dev/xvde1
+/usr/lib/udev/scsi_id -g -u -d /dev/xvdf1
+/usr/lib/udev/scsi_id -g -u -d /dev/xvdg1
+/usr/lib/udev/scsi_id -g -u -d /dev/xvdh1
+/usr/lib/udev/scsi_id -g -u -d /dev/xvdi1
+/usr/lib/udev/scsi_id -g -u -d /dev/xvdj1
+
+scsi_id Not shown in OVM?? Damn
+
+### Create udev Rules on All RAC Nodes
+######################################
+vi /etc/udev/rules.d/99-oracle-asmdevices.rules
+===============================================
+SUBSYSTEM=="block", KERNEL=="xvdc1", OWNER="oracle", GROUP="asmadmin", MODE="0660", SYMLINK+="oracleasm/DATA400G01"
+SUBSYSTEM=="block", KERNEL=="xvdd1", OWNER="oracle", GROUP="asmadmin", MODE="0660", SYMLINK+="oracleasm/RECO200G01"
+SUBSYSTEM=="block", KERNEL=="xvde1", OWNER="oracle", GROUP="asmadmin", MODE="0660", SYMLINK+="oracleasm/REDO150G01"
+SUBSYSTEM=="block", KERNEL=="xvdf1", OWNER="oracle", GROUP="asmadmin", MODE="0660", SYMLINK+="oracleasm/OCRVOTE10G01"
+SUBSYSTEM=="block", KERNEL=="xvdg1", OWNER="oracle", GROUP="asmadmin", MODE="0660", SYMLINK+="oracleasm/OCRVOTE10G02"
+SUBSYSTEM=="block", KERNEL=="xvdh1", OWNER="oracle", GROUP="asmadmin", MODE="0660", SYMLINK+="oracleasm/OCRVOTE10G03"
+SUBSYSTEM=="block", KERNEL=="xvdi1", OWNER="oracle", GROUP="asmadmin", MODE="0660", SYMLINK+="oracleasm/OCRVOTE10G04"
+SUBSYSTEM=="block", KERNEL=="xvdj1", OWNER="oracle", GROUP="asmadmin", MODE="0660", SYMLINK+="oracleasm/OCRVOTE10G05"
+
+This udev configuration is not the best practice, because this configuration is not using scsi_id. You can look at the udevASM.txt for the right one.
+
+### Test The ASM Disks on racnode1 Only
+#######################################
+/sbin/partprobe /dev/xvdc1
+/sbin/partprobe /dev/xvdd1
+/sbin/partprobe /dev/xvde1
+/sbin/partprobe /dev/xvdf1
+/sbin/partprobe /dev/xvdg1
+/sbin/partprobe /dev/xvdh1
+/sbin/partprobe /dev/xvdi1
+/sbin/partprobe /dev/xvdj1
+
+/sbin/udevadm test /block/xvdc/xvdc1
+/sbin/udevadm test /block/xvdd/xvdd1
+/sbin/udevadm test /block/xvde/xvde1
+/sbin/udevadm test /block/xvdf/xvdf1
+/sbin/udevadm test /block/xvdg/xvdg1
+/sbin/udevadm test /block/xvdh/xvdh1
+/sbin/udevadm test /block/xvdi/xvdi1
+/sbin/udevadm test /block/xvdj/xvdj1
+
+/sbin/udevadm control --reload-rules
+
+### Make Sure The Disks ASM are Owned by oracle:asmadmin
+########################################################
+[root@racnode1 ~]# ls -lh /dev/oracleasm/
+total 0
+lrwxrwxrwx. 1 root root 8 Jul  5 19:19 DATA400G01 -> ../xvdc1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:20 OCRVOTE10G01 -> ../xvdf1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:20 OCRVOTE10G02 -> ../xvdg1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:21 OCRVOTE10G03 -> ../xvdh1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:21 OCRVOTE10G04 -> ../xvdi1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:21 OCRVOTE10G05 -> ../xvdj1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:20 RECO200G01 -> ../xvdd1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:20 REDO150G01 -> ../xvde1
+[root@racnode1 ~]# ls -lh /dev/xvd*
+brw-rw----. 1 root   disk     202,  16 Jul  5 18:32 /dev/xvdb
+brw-rw----. 1 root   disk     202,  17 Jul  5 18:32 /dev/xvdb1
+brw-rw----. 1 root   disk     202,  18 Jul  5 18:32 /dev/xvdb2
+brw-rw----. 1 root   disk     202,  32 Jul  5 18:31 /dev/xvdc
+brw-rw----. 1 oracle asmadmin 202,  33 Jul  5 19:19 /dev/xvdc1
+brw-rw----. 1 root   disk     202,  48 Jul  5 18:31 /dev/xvdd
+brw-rw----. 1 oracle asmadmin 202,  49 Jul  5 19:20 /dev/xvdd1
+brw-rw----. 1 root   disk     202,  64 Jul  5 18:31 /dev/xvde
+brw-rw----. 1 oracle asmadmin 202,  65 Jul  5 19:20 /dev/xvde1
+brw-rw----. 1 root   disk     202,  80 Jul  5 18:31 /dev/xvdf
+brw-rw----. 1 oracle asmadmin 202,  81 Jul  5 19:20 /dev/xvdf1
+brw-rw----. 1 root   disk     202,  96 Jul  5 18:31 /dev/xvdg
+brw-rw----. 1 oracle asmadmin 202,  97 Jul  5 19:20 /dev/xvdg1
+brw-rw----. 1 root   disk     202, 112 Jul  5 18:31 /dev/xvdh
+brw-rw----. 1 oracle asmadmin 202, 113 Jul  5 19:21 /dev/xvdh1
+brw-rw----. 1 root   disk     202, 128 Jul  5 18:31 /dev/xvdi
+brw-rw----. 1 oracle asmadmin 202, 129 Jul  5 19:21 /dev/xvdi1
+brw-rw----. 1 root   disk     202, 144 Jul  5 18:31 /dev/xvdj
+brw-rw----. 1 oracle asmadmin 202, 145 Jul  5 19:21 /dev/xvdj1
+[root@racnode1 ~]#
+
+### reboot on All RAC Nodes
+###########################
+# reboot
+
+### Make Sure The Disks ASM are Owned by oracle:asmadmin on All RAC Nodes
+#########################################################################
+[oracle@racnode1 ~]$ ls -lh /dev/oracleasm
+total 0
+lrwxrwxrwx. 1 root root 8 Jul  5 19:17 DATA400G01 -> ../xvdc1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:17 OCRVOTE10G01 -> ../xvdf1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:17 OCRVOTE10G02 -> ../xvdg1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:17 OCRVOTE10G03 -> ../xvdh1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:17 OCRVOTE10G04 -> ../xvdi1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:17 OCRVOTE10G05 -> ../xvdj1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:17 RECO200G01 -> ../xvdd1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:17 REDO150G01 -> ../xvde1
+[oracle@racnode1 ~]$ ls -lh /dev/xvd*
+brw-rw----. 1 root   disk     202,  16 Jul  5 19:17 /dev/xvdb
+brw-rw----. 1 root   disk     202,  17 Jul  5 19:17 /dev/xvdb1
+brw-rw----. 1 root   disk     202,  18 Jul  5 19:17 /dev/xvdb2
+brw-rw----. 1 root   disk     202,  32 Jul  5 19:17 /dev/xvdc
+brw-rw----. 1 oracle asmadmin 202,  33 Jul  5 19:17 /dev/xvdc1
+brw-rw----. 1 root   disk     202,  48 Jul  5 19:17 /dev/xvdd
+brw-rw----. 1 oracle asmadmin 202,  49 Jul  5 19:17 /dev/xvdd1
+brw-rw----. 1 root   disk     202,  64 Jul  5 19:17 /dev/xvde
+brw-rw----. 1 oracle asmadmin 202,  65 Jul  5 19:17 /dev/xvde1
+brw-rw----. 1 root   disk     202,  80 Jul  5 19:17 /dev/xvdf
+brw-rw----. 1 oracle asmadmin 202,  81 Jul  5 19:17 /dev/xvdf1
+brw-rw----. 1 root   disk     202,  96 Jul  5 19:17 /dev/xvdg
+brw-rw----. 1 oracle asmadmin 202,  97 Jul  5 19:17 /dev/xvdg1
+brw-rw----. 1 root   disk     202, 112 Jul  5 19:17 /dev/xvdh
+brw-rw----. 1 oracle asmadmin 202, 113 Jul  5 19:17 /dev/xvdh1
+brw-rw----. 1 root   disk     202, 128 Jul  5 19:17 /dev/xvdi
+brw-rw----. 1 oracle asmadmin 202, 129 Jul  5 19:17 /dev/xvdi1
+brw-rw----. 1 root   disk     202, 144 Jul  5 19:17 /dev/xvdj
+brw-rw----. 1 oracle asmadmin 202, 145 Jul  5 19:17 /dev/xvdj1
+[oracle@racnode1 ~]$
+
+[oracle@racnode2 ~]$ ls -lh /dev/oracleasm
+total 0
+lrwxrwxrwx. 1 root root 8 Jul  5 19:22 DATA400G01 -> ../xvdc1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:22 OCRVOTE10G01 -> ../xvdf1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:22 OCRVOTE10G02 -> ../xvdg1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:22 OCRVOTE10G03 -> ../xvdh1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:22 OCRVOTE10G04 -> ../xvdi1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:22 OCRVOTE10G05 -> ../xvdj1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:22 RECO200G01 -> ../xvdd1
+lrwxrwxrwx. 1 root root 8 Jul  5 19:22 REDO150G01 -> ../xvde1
+[oracle@racnode2 ~]$ ls -lh /dev/xvd*
+brw-rw----. 1 root   disk     202,  16 Jul  5 19:22 /dev/xvdb
+brw-rw----. 1 root   disk     202,  17 Jul  5 19:22 /dev/xvdb1
+brw-rw----. 1 root   disk     202,  18 Jul  5 19:22 /dev/xvdb2
+brw-rw----. 1 root   disk     202,  32 Jul  5 19:22 /dev/xvdc
+brw-rw----. 1 oracle asmadmin 202,  33 Jul  5 19:22 /dev/xvdc1
+brw-rw----. 1 root   disk     202,  48 Jul  5 19:22 /dev/xvdd
+brw-rw----. 1 oracle asmadmin 202,  49 Jul  5 19:22 /dev/xvdd1
+brw-rw----. 1 root   disk     202,  64 Jul  5 19:22 /dev/xvde
+brw-rw----. 1 oracle asmadmin 202,  65 Jul  5 19:22 /dev/xvde1
+brw-rw----. 1 root   disk     202,  80 Jul  5 19:22 /dev/xvdf
+brw-rw----. 1 oracle asmadmin 202,  81 Jul  5 19:22 /dev/xvdf1
+brw-rw----. 1 root   disk     202,  96 Jul  5 19:22 /dev/xvdg
+brw-rw----. 1 oracle asmadmin 202,  97 Jul  5 19:22 /dev/xvdg1
+brw-rw----. 1 root   disk     202, 112 Jul  5 19:22 /dev/xvdh
+brw-rw----. 1 oracle asmadmin 202, 113 Jul  5 19:22 /dev/xvdh1
+brw-rw----. 1 root   disk     202, 128 Jul  5 19:22 /dev/xvdi
+brw-rw----. 1 oracle asmadmin 202, 129 Jul  5 19:22 /dev/xvdi1
+brw-rw----. 1 root   disk     202, 144 Jul  5 19:22 /dev/xvdj
+brw-rw----. 1 oracle asmadmin 202, 145 Jul  5 19:22 /dev/xvdj1
+[oracle@racnode2 ~]$
+
+### Install GI on racnode1 Only
+###############################
+[oracle@racnode1 ~]$ . grid_profile; env|grep ORA; cd $ORACLE_HOME; pwd;
+ORACLE_SID=+ASM1
+ORACLE_BASE=/u01/app/oracle
+ORACLE_HOSTNAME=racnode1.sgcpc.local
+ORACLE_TERM=xterm
+ORACLE_HOME=/u01/app/12.2.0.1/grid
+/u01/app/12.2.0.1/grid
+[oracle@racnode1 grid]$ unzip ~/Downloads/linuxx64_12201_grid_home.zip
+...
+  inflating: xdk/mesg/lsxja.msb      
+finishing deferred symbolic links:
+  bin/lbuilder           -> ../nls/lbuilder/lbuilder
+  javavm/admin/libjtcjt.so -> ../../javavm/jdk/jdk8/admin/libjtcjt.so
+  javavm/admin/lfclasses.bin -> ../../javavm/jdk/jdk8/admin/lfclasses.bin
+  javavm/admin/classes.bin -> ../../javavm/jdk/jdk8/admin/classes.bin
+  javavm/admin/cbp.jar   -> ../../javavm/jdk/jdk8/admin/cbp.jar
+  javavm/lib/sunjce_provider.jar -> ../../javavm/jdk/jdk8/lib/sunjce_provider.jar
+  javavm/lib/jce.jar     -> ../../javavm/jdk/jdk8/lib/jce.jar
+  javavm/lib/security/US_export_policy.jar -> ../../../javavm/jdk/jdk8/lib/security/US_export_policy.jar
+  javavm/lib/security/java.security -> ../../../javavm/jdk/jdk8/lib/security/java.security
+  javavm/lib/security/local_policy.jar -> ../../../javavm/jdk/jdk8/lib/security/local_policy.jar
+  javavm/lib/security/cacerts -> ../../../javavm/jdk/jdk8/lib/security/cacerts
+  jdk/bin/ControlPanel   -> jcontrol
+  jdk/jre/bin/ControlPanel -> jcontrol
+  jdk/jre/lib/amd64/server/libjsig.so -> ../libjsig.so
+  lib/libclntshcore.so   -> libclntshcore.so.12.1
+  lib/libjavavm12.a      -> ../javavm/jdk/jdk8/lib/libjavavm12.a
+  lib/libodm12.so        -> libodmd12.so
+  lib/libagtsh.so        -> libagtsh.so.1.0
+  lib/libclntsh.so       -> libclntsh.so.12.1
+  lib/libocci.so         -> libocci.so.12.1
+[oracle@racnode1 grid]$ ./gridSetup.sh ==> Failed because of INS-40719 scan
+
+### Troubleshoot INS-40719 scan During GI Installation
+######################################################
+[oracle@racnode1 ~]$ nslookup rac-scan
+Server:         10.85.236.131
+Address:        10.85.236.131#53
+
+Name:   rac-scan.sgcpc.local
+Address: 10.85.232.30
+Name:   rac-scan.sgcpc.local
+Address: 10.85.232.39
+Name:   rac-scan.sgcpc.local
+Address: 10.85.232.40
+
+[oracle@racnode1 ~]$ ssh root@10.85.232.30
+ssh: connect to host 10.85.232.30 port 22: No route to host ==> Good, unused IP
+[oracle@racnode1 ~]$ ssh root@10.85.232.39
+ssh: connect to host 10.85.232.39 port 22: No route to host ==> Good, unused IP
+[oracle@racnode1 ~]$ ssh root@10.85.232.40
+The authenticity of host '10.85.232.40 (10.85.232.40)' can't be established. ==> Damn, used IP by kvm-host. This is the fucking root cause. Reserve another unsued IP to the DNS for SCAN.
+ECDSA key fingerprint is 1e:c5:ca:8c:47:68:f6:8f:68:79:d5:c7:ff:a2:9f:d3.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '10.85.232.40' (ECDSA) to the list of known hosts.
+root@10.85.232.40's password:
+Last login: Thu Jul  5 07:21:21 2018 from 10.85.236.31
+[root@kvm-host ~]#
+
+### 20180706
+############
+
+### Test SCAN on All RAC Nodes
+##############################
+[oracle@racnode1 ~]$ nslookup rac-scan
+Server:         10.85.236.131
+Address:        10.85.236.131#53
+
+Name:   rac-scan.sgcpc.local
+Address: 10.85.232.39
+Name:   rac-scan.sgcpc.local
+Address: 10.85.232.29
+Name:   rac-scan.sgcpc.local
+Address: 10.85.232.30
+
+[oracle@racnode1 ~]$ ssh root@10.85.232.29
+ssh: connect to host 10.85.232.29 port 22: No route to host ==> Good, unused IP
+[oracle@racnode1 ~]$ ssh root@10.85.232.30
+ssh: connect to host 10.85.232.30 port 22: No route to host ==> Good, unused IP
+[oracle@racnode1 ~]$ ssh root@10.85.232.39
+ssh: connect to host 10.85.232.39 port 22: No route to host ==> Good, unused IP
+[oracle@racnode1 ~]$ ping -c 2 10.85.232.29
+PING 10.85.232.29 (10.85.232.29) 56(84) bytes of data.
+From 10.85.232.35 icmp_seq=1 Destination Host Unreachable
+From 10.85.232.35 icmp_seq=2 Destination Host Unreachable
+
+--- 10.85.232.29 ping statistics ---
+2 packets transmitted, 0 received, +2 errors, 100% packet loss, time 999ms
+pipe 2
+[oracle@racnode1 ~]$ ping -c 2 10.85.232.30
+PING 10.85.232.30 (10.85.232.30) 56(84) bytes of data.
+From 10.85.232.35 icmp_seq=1 Destination Host Unreachable
+From 10.85.232.35 icmp_seq=2 Destination Host Unreachable
+
+--- 10.85.232.30 ping statistics ---
+2 packets transmitted, 0 received, +2 errors, 100% packet loss, time 999ms
+pipe 2
+[oracle@racnode1 ~]$ ping -c 2 10.85.232.39
+PING 10.85.232.39 (10.85.232.39) 56(84) bytes of data.
+From 10.85.232.35 icmp_seq=1 Destination Host Unreachable
+From 10.85.232.35 icmp_seq=2 Destination Host Unreachable
+
+--- 10.85.232.39 ping statistics ---
+2 packets transmitted, 0 received, +2 errors, 100% packet loss, time 999ms
+pipe 2
+[oracle@racnode1 ~]$
+
+### Install GI on racnode1 Only
+###############################
+[oracle@racnode1 grid]$ ./gridSetup.sh
+
+### Run root.sh on All RAC Nodes
+################################
+Oracle GI 12.2.0.1 Linux will fail during root.sh execution. The failure in install ACFS step. Run perl command. Please look at root1.sh and root2.sh documentation.
+
+### Check Cluster after GI Installation
+#######################################
+[oracle@racnode2 ~]$ crsctl stat res -t
+--------------------------------------------------------------------------------
+Name           Target  State        Server                   State details
+--------------------------------------------------------------------------------
+Local Resources
+--------------------------------------------------------------------------------
+ora.ASMNET1LSNR_ASM.lsnr
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.LISTENER.lsnr
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.OCRVOTE.dg
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.net1.network
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.ons
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+--------------------------------------------------------------------------------
+Cluster Resources
+--------------------------------------------------------------------------------
+ora.LISTENER_SCAN1.lsnr
+      1        ONLINE  ONLINE       racnode2                 STABLE
+ora.LISTENER_SCAN2.lsnr
+      1        ONLINE  ONLINE       racnode1                 STABLE
+ora.LISTENER_SCAN3.lsnr
+      1        ONLINE  ONLINE       racnode1                 STABLE
+ora.MGMTLSNR
+      1        OFFLINE OFFLINE                               STABLE
+ora.asm
+      1        ONLINE  ONLINE       racnode1                 Started,STABLE
+      2        ONLINE  ONLINE       racnode2                 Started,STABLE
+      3        OFFLINE OFFLINE                               STABLE
+ora.cvu
+      1        ONLINE  ONLINE       racnode1                 STABLE
+ora.qosmserver
+      1        ONLINE  ONLINE       racnode1                 STABLE
+ora.racnode1.vip
+      1        ONLINE  ONLINE       racnode1                 STABLE
+ora.racnode2.vip
+      1        ONLINE  ONLINE       racnode2                 STABLE
+ora.scan1.vip
+      1        ONLINE  ONLINE       racnode2                 STABLE
+ora.scan2.vip
+      1        ONLINE  ONLINE       racnode1                 STABLE
+ora.scan3.vip
+      1        ONLINE  ONLINE       racnode1                 STABLE
+--------------------------------------------------------------------------------
+[oracle@racnode2 ~]$
+
+### Create ASM Diskgroup
+########################
+. grid_profile; asmca
+
+[oracle@racnode2 ~]$ crsctl stat res -t
+--------------------------------------------------------------------------------
+Name           Target  State        Server                   State details
+--------------------------------------------------------------------------------
+Local Resources
+--------------------------------------------------------------------------------
+ora.ASMNET1LSNR_ASM.lsnr
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.DATA.dg
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.LISTENER.lsnr
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.OCRVOTE.dg
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.RECO.dg
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.REDO.dg
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.chad
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.net1.network
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.ons
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+--------------------------------------------------------------------------------
+Cluster Resources
+--------------------------------------------------------------------------------
+ora.LISTENER_SCAN1.lsnr
+      1        ONLINE  ONLINE       racnode2                 STABLE
+ora.LISTENER_SCAN2.lsnr
+      1        ONLINE  ONLINE       racnode1                 STABLE
+ora.LISTENER_SCAN3.lsnr
+      1        ONLINE  ONLINE       racnode1                 STABLE
+ora.MGMTLSNR
+      1        ONLINE  ONLINE       racnode1                 169.254.33.69 172.16
+                                                             .45.101,STABLE
+ora.asm
+      1        ONLINE  ONLINE       racnode1                 Started,STABLE
+      2        ONLINE  ONLINE       racnode2                 Started,STABLE
+      3        OFFLINE OFFLINE                               STABLE
+ora.cvu
+      1        ONLINE  ONLINE       racnode1                 STABLE
+ora.mgmtdb
+      1        ONLINE  ONLINE       racnode1                 Open,STABLE
+ora.qosmserver
+      1        ONLINE  ONLINE       racnode1                 STABLE
+ora.racnode1.vip
+      1        ONLINE  ONLINE       racnode1                 STABLE
+ora.racnode2.vip
+      1        ONLINE  ONLINE       racnode2                 STABLE
+ora.scan1.vip
+      1        ONLINE  ONLINE       racnode2                 STABLE
+ora.scan2.vip
+      1        ONLINE  ONLINE       racnode1                 STABLE
+ora.scan3.vip
+      1        ONLINE  ONLINE       racnode1                 STABLE
+--------------------------------------------------------------------------------
+[oracle@racnode2 ~]$
+
+### Install DB Software on racnode1 Only
+########################################
+. db_profile
+unzip linuxx64_12201_database.zip; cd database;
+./runInstaller
+
+### Create DB on racnode1 Only
+##############################
+. db_profile; dbca;
+
+[oracle@racnode2 ~]$ crsctl stat res -t
+--------------------------------------------------------------------------------
+Name           Target  State        Server                   State details
+--------------------------------------------------------------------------------
+Local Resources
+--------------------------------------------------------------------------------
+ora.ASMNET1LSNR_ASM.lsnr
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.DATA.dg
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.LISTENER.lsnr
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.OCRVOTE.dg
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.RECO.dg
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.REDO.dg
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.chad
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.net1.network
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+ora.ons
+               ONLINE  ONLINE       racnode1                 STABLE
+               ONLINE  ONLINE       racnode2                 STABLE
+--------------------------------------------------------------------------------
+Cluster Resources
+--------------------------------------------------------------------------------
+ora.LISTENER_SCAN1.lsnr
+      1        ONLINE  ONLINE       racnode2                 STABLE
+ora.LISTENER_SCAN2.lsnr
+      1        ONLINE  ONLINE       racnode1                 STABLE
+ora.LISTENER_SCAN3.lsnr
+      1        ONLINE  ONLINE       racnode1                 STABLE
+ora.MGMTLSNR
+      1        ONLINE  ONLINE       racnode1                 169.254.33.69 172.16
+                                                             .45.101,STABLE
+ora.asm
+      1        ONLINE  ONLINE       racnode1                 Started,STABLE
+      2        ONLINE  ONLINE       racnode2                 Started,STABLE
+      3        OFFLINE OFFLINE                               STABLE
+ora.cvu
+      1        ONLINE  ONLINE       racnode1                 STABLE
+ora.mgmtdb
+      1        ONLINE  ONLINE       racnode1                 Open,STABLE
+ora.qosmserver
+      1        ONLINE  ONLINE       racnode1                 STABLE
+ora.racdb.db
+      1        ONLINE  ONLINE       racnode1                 Open,HOME=/u01/app/o
+                                                             racle/product/12.2.0
+                                                             .1/db_1,STABLE
+      2        ONLINE  ONLINE       racnode2                 Open,HOME=/u01/app/o
+                                                             racle/product/12.2.0
+                                                             .1/db_1,STABLE
+ora.racnode1.vip
+      1        ONLINE  ONLINE       racnode1                 STABLE
+ora.racnode2.vip
+      1        ONLINE  ONLINE       racnode2                 STABLE
+ora.scan1.vip
+      1        ONLINE  ONLINE       racnode2                 STABLE
+ora.scan2.vip
+      1        ONLINE  ONLINE       racnode1                 STABLE
+ora.scan3.vip
+      1        ONLINE  ONLINE       racnode1                 STABLE
+--------------------------------------------------------------------------------
+[oracle@racnode2 ~]$ srvctl status asm; srvctl status listener; srvctl status database -d racdb
+ASM is running on racnode2,racnode1
+Listener LISTENER is enabled
+Listener LISTENER is running on node(s): racnode2,racnode1
+Instance RACDB1 is running on node racnode1
+Instance RACDB2 is running on node racnode2
+[oracle@racnode2 ~]$ . db_profile
+SQL> SELECT NAME,CREATED,DATABASE_ROLE,OPEN_MODE FROM GV$DATABASE;
+
+NAME      CREATED            DATABASE_ROLE    OPEN_MODE
+--------- ------------------ ---------------- --------------------
+RACDB     06-Jul-18 07:49:08 PRIMARY          READ WRITE
+RACDB     06-Jul-18 07:49:08 PRIMARY          READ WRITE
+
+Elapsed: 00:00:00.01
+SQL> SELECT BANNER FROM V$VERSION;
+
+BANNER
+--------------------------------------------------------------------------------
+Oracle Database 12c Enterprise Edition Release 12.2.0.1.0 - 64bit Production
+PL/SQL Release 12.2.0.1.0 - Production
+CORE    12.2.0.1.0      Production
+TNS for Linux: Version 12.2.0.1.0 - Production
+NLSRTL Version 12.2.0.1.0 - Production
+
+Elapsed: 00:00:00.01
+SQL> SELECT INSTANCE_NAME,STATUS,HOST_NAME FROM GV$INSTANCE;
+
+INSTANCE_NAME    STATUS       HOST_NAME
+---------------- ------------ ----------------------------------------------------------------
+RACDB2           OPEN         racnode2.sgcpc.local
+RACDB1           OPEN         racnode1.sgcpc.local
+
+Elapsed: 00:00:00.02
+SQL>

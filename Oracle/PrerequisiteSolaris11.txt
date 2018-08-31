@@ -1,0 +1,49 @@
+########################################################################################################
+Shell limit 			 Description 								 Soft Limit (KB) 	 Hard Limit (KB)
+########################################################################################################
+STACK 					 Size of the stack segment of the process 	 at least 10240 	 at most 32768
+NOFILES 				 Open file descriptors 						 at least 1024 		 at least 65536
+MAXUPROC or MAXPROC 	 Maximum user processes 					 at least 2047 		 at least 16384
+########################################################################################################
+SOFT basic
+HARD priv
+
+groupadd dba; groupadd oinstall;
+projadd group.dba;
+projmod -sK "project.max-shm-memory=(priv,64gb,deny)" group.dba
+projmod -sK "project.max-sem-ids=(priv,1024,deny)" group.dba
+projmod -sK "project.max-shm-ids=(priv,1024,deny)" group.dba
+projmod -sK "process.max-sem-nsems=(priv,4096,deny)" group.dba
+projmod -sK "process.max-file-descriptor=(basic,1mb,deny) group.dba
+projmod -sK "process.max-file-descriptor=(priv,64mb,deny)" group.dba
+projmod -sK "process.max-stack-size=(basic,10mb,deny)" group.dba
+projmod -sK "process.max-stack-size=(priv,32mb,deny)" group.dba
+projects -l group.dba
+useradd -g oinstall -G dba -d /export/home/oracle -m -s /bin/bash -K project=group.dba -c "Oracle DB Software" oracle
+passwd oracle
+id -p oracle
+ls -lh /export/home
+
+REFERENCE
+#########
+http://www.oracle.com/technetwork/server-storage/vm/ovm-sparc-install-rac11gr2-1676380.pdf
+# projmod -sK "project.max-shm-memory=(privileged,32G,deny)" user.oracle
+# projmod -sK "process.max-sem-nsems=(priv,4096,deny)" user.oracle
+# projmod -sK "project.max-shm-ids=(priv,1024,deny)" user.oracle
+# projmod -sK "project.max-sem-ids=(priv,1024,deny)" user.oracle
+ulimit -n 65536
+
+root@af-aoldb-sby02:~# vi /etc/user_attr
+root@af-aoldb-sby02:~# cat /etc/user_attr
+#
+# Copyright (c) 1999, 2013, Oracle and/or its affiliates. All rights reserved.
+#
+# The system provided entries are stored in different files
+# under "/etc/user_attr.d".  They should not be copied to this file.
+#
+# Only local changes should be stored in this file.
+#
+grid::::project=group.dba
+oracle::::project=group.dba
+
+root@af-aoldb-sby02:~# useradd -g dba -G dba -d /export/home/oracle -m oracle

@@ -1,0 +1,301 @@
+http://gavinsoorma.com/2013/02/restoring-a-asm-backup-to-non-asm-and-restoring-from-rac-to-single-instance/
+
+	
+Restoring a ASM backup to non-ASM and restoring from RAC to single-instance
+
+Scenario:
+
+1) We want to restore the production database which is running on two-node RAC environment in a test non-RAC environment
+
+2) We want to restore the backup residing on ASM disk groups in a non-ASM file system.
+
+Note:
+
+The production database orcl has two instances named orcl1 and orcl2. The database will be restored in the test environment as single instance database named orcl.
+
+The production database database files and FRA are located on the ASM disk +DATA and the file system location on the target server where the files will be restored will be /u01/app/oracle/oradata/orcl. The FRA will be the file system location /u01/app/oracle/flash_recovery_area
+
+The database files will be OMF in this case. By using a different SET NEWNAME command we can if we prefer not restore the files as OMF. For easier manageability I would prefer not to use OMF but in this example OMF is shown.
+
+These are the backupset pieces of the database, control file and archivelog backups which are located on the source server in the ASM disk group +DATA.
+
+ +DATA/orcl/backupset/2013_02_18/nnndf0_tag20130218t093350_0.345.807701631
+ +DATA/orcl/backupset/2013_02_18/ncnnf0_tag20130218t093811_0.337.807701893
+ +DATA/orcl/backupset/2013_02_18/annnf0_tag20130218t093927_0.325.807701967
+
+On the source server we create a directory on the local file system where we will copy these files out from the ASM disk group. We can also NFS mount a remote file system which has adequate disk space in case the backup pieces are large in size and we do not have adequate space on the local file system.
+
+Since it is 11gR2 Grid Infrastructure, we connect as the grid user who owns the GI software and use the asmcmd cp command to copy files from ASM to file system.
+
+[oracle@kens-racnode1 backup]$ su - grid
+Password:
+[grid@kens-racnode1 ~]$ . oraenv
+ORACLE_SID = [grid] ? +ASM1
+The Oracle base has been set to /u01/app/grid
+
+grid@kens-racnode1 ~]$ asmcmd
+ASMCMD> cd DATA
+ASMCMD> cd ORCL
+ASMCMD> cd BACKUPSET
+ASMCMD> ls
+2013_02_18/
+ASMCMD> cd *
+ASMCMD> cp nnndf0_tag20130218t093350_0.345.807701631 /u02/app/backup
+copying +DATA/ORCL/BACKUPSET/2013_02_18/nnndf0_tag20130218t093350_0.345.807701631 -> /u02/app/backup/nnndf0_tag20130218t093350_0.345.807701631
+ASMCMD> cp ncnnf0_tag20130218t093811_0.337.807701893  /u02/app/backup
+copying +DATA/ORCL/BACKUPSET/2013_02_18/ncnnf0_tag20130218t093811_0.337.807701893 -> /u02/app/backup/ncnnf0_tag20130218t093811_0.337.807701893
+ASMCMD> cp annnf0_tag20130218t093927_0.325.807701967 /u02/app/backup
+copying +DATA/ORCL/BACKUPSET/2013_02_18/annnf0_tag20130218t093927_0.325.807701967 -> /u02/app/backup/annnf0_tag20130218t093927_0.325.807701967
+
+Now scp these files from the file system on the source server to a file system on the target server
+
+Copy the password file and init.ora of one of the RAC instances from the source server to target server and make the required changes as we will bring up the database on the target server as a non-RAC single instance database
+
+For example, this is how the init.ora for the single instance database orcl would look like
+
+orcl.__db_cache_size=603979776
+orcl.__java_pool_size=50331648
+orcl.__large_pool_size=16777216
+orcl.__oracle_base='/u01/app/oracle'#ORACLE_BASE set from environment
+orcl.__pga_aggregate_target=603979776
+orcl.__sga_target=1157627904
+orcl.__shared_io_pool_size=0
+orcl.__shared_pool_size=469762048
+orcl.__streams_pool_size=0
+*.audit_file_dest='/u01/app/oracle/admin/orcl/adump'
+*.audit_trail='DB'
+*.compatible='11.2.0.0.0'
+*.control_files='/u01/app/oracle/oradata/orcl/control01.ctl','/u01/app/oracle/oradata/orcl/control02.ctl'
+*.db_block_size=8192
+*.db_file_name_convert='+DATA/orcl/onlinelog/','/u01/app/oracle/oradata/orcl/'
+*.db_create_online_log_dest_1=’ /u01/app/oracle/oradata/'
+*.db_domain='mydb.domain'
+*.db_name='orcl'
+*.db_recovery_file_dest='/u01/app/oracle/flash_recovery_area'
+*.db_recovery_file_dest_size=4G
+*.diagnostic_dest='/u01/app/oracle'
+*.log_archive_format='%t_%s_%r.dbf'
+*.memory_target=1761607680
+*.open_cursors=300
+*.processes=150
+*.remote_login_passwordfile='EXCLUSIVE'
+orcl.undo_tablespace='UNDOTBS1'
+
+On the target server, set the environment and start the database in NOMOUNT mode.
+
+SQL> startup nomount;
+
+ORACLE instance started.
+ 
+Total System Global Area 1753731072 bytes
+Fixed Size                  2229144 bytes
+Variable Size            1140853864 bytes
+Database Buffers          603979776 bytes
+Redo Buffers                6668288 bytes
+
+Restore the control file
+
+RMAN> restore controlfile from '/u01/app/oracle/backup/ncnnf0_tag20130218t093811_0.337.807701893';
+ 
+Starting restore at 19-FEB-13
+using target database control file instead of recovery catalog
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=134 device type=DISK
+ 
+channel ORA_DISK_1: restoring control file
+channel ORA_DISK_1: restore complete, elapsed time: 00:00:01
+output file name=/u01/app/oracle/oradata/orcl/control01.ctl
+output file name=/u01/app/oracle/oradata/orcl/control02.ctl
+Finished restore at 19-FEB-13
+
+Mount the database and catalog the RMAN backup pieces
+
+RMAN> alter database mount;
+ 
+database mounted
+released channel: ORA_DISK_1
+ 
+ 
+ 
+RMAN> catalog start with '/u01/app/oracle/backup/';
+ 
+searching for all files that match the pattern /u01/app/oracle/backup/
+ 
+List of Files Unknown to the Database
+=====================================
+File Name: /u01/app/oracle/backup/ncnnf0_tag20130218t093811_0.337.807701893
+File Name: /u01/app/oracle/backup/nnndf0_tag20130218t093350_0.345.807701631
+File Name: /u01/app/oracle/backup/annnf0_tag20130218t093927_0.325.807701967
+ 
+Do you really want to catalog the above files (enter YES or NO)? YES
+cataloging files...
+cataloging done
+ 
+List of Cataloged Files
+=======================
+File Name: /u01/app/oracle/backup/ncnnf0_tag20130218t093811_0.337.807701893
+File Name: /u01/app/oracle/backup/nnndf0_tag20130218t093350_0.345.807701631
+File Name: /u01/app/oracle/backup/annnf0_tag20130218t093927_0.325.807701967
+
+This is the RMAN script we will be using :
+
+run {
+SET NEWNAME FOR DATABASE   TO  '/u01/app/oracle/oradata/orcl/%b';
+SET NEWNAME FOR tempfile  1 TO  '/u01/app/oracle/oradata/orcl/%b';
+restore database;
+switch datafile all;
+switch tempfile all;
+}
+
+Execute the same
+
+RMAN> run {
+SET NEWNAME FOR DATABASE   TO  '/u01/app/oracle/oradata/orcl/%b';
+SET NEWNAME FOR tempfile  1 TO  '/u01/app/oracle/oradata/orcl/%b';
+restore database;
+switch datafile all;
+switch tempfile all;
+}
+2> 3> 4> 5> 6> 7>
+executing command: SET NEWNAME
+ 
+executing command: SET NEWNAME
+ 
+Starting restore at 21-FEB-13
+using channel ORA_DISK_1
+ 
+channel ORA_DISK_1: starting datafile backup set restore
+channel ORA_DISK_1: specifying datafile(s) to restore from backup set
+channel ORA_DISK_1: restoring datafile 00001 to /u01/app/oracle/oradata/orcl/system.260.787036171
+channel ORA_DISK_1: restoring datafile 00002 to /u01/app/oracle/oradata/orcl/sysaux.261.787036171
+channel ORA_DISK_1: restoring datafile 00003 to /u01/app/oracle/oradata/orcl/undotbs1.273.787036171
+channel ORA_DISK_1: restoring datafile 00004 to /u01/app/oracle/oradata/orcl/users.266.787036173
+channel ORA_DISK_1: restoring datafile 00005 to /u01/app/oracle/oradata/orcl/example.262.787036303
+channel ORA_DISK_1: restoring datafile 00006 to /u01/app/oracle/oradata/orcl/undotbs2.268.787036459
+channel ORA_DISK_1: restoring datafile 00007 to /u01/app/oracle/oradata/orcl/ggs_data.327.798611507
+channel ORA_DISK_1: reading from backup piece /u01/app/oracle/backup/nnndf0_tag20130218t093350_0.345.807701631
+channel ORA_DISK_1: piece handle=/u01/app/oracle/backup/nnndf0_tag20130218t093350_0.345.807701631 tag=TAG20130218T093350
+channel ORA_DISK_1: restored backup piece 1
+channel ORA_DISK_1: restore complete, elapsed time: 00:00:45
+Finished restore at 21-FEB-13
+ 
+datafile 1 switched to datafile copy
+input datafile copy RECID=9 STAMP=807958250 file name=/u01/app/oracle/oradata/orcl/system.260.787036171
+datafile 2 switched to datafile copy
+input datafile copy RECID=10 STAMP=807958250 file name=/u01/app/oracle/oradata/orcl/sysaux.261.787036171
+datafile 3 switched to datafile copy
+input datafile copy RECID=11 STAMP=807958250 file name=/u01/app/oracle/oradata/orcl/undotbs1.273.787036171
+datafile 4 switched to datafile copy
+input datafile copy RECID=12 STAMP=807958250 file name=/u01/app/oracle/oradata/orcl/users.266.787036173
+datafile 5 switched to datafile copy
+input datafile copy RECID=13 STAMP=807958250 file name=/u01/app/oracle/oradata/orcl/example.262.787036303
+datafile 6 switched to datafile copy
+input datafile copy RECID=14 STAMP=807958250 file name=/u01/app/oracle/oradata/orcl/undotbs2.268.787036459
+datafile 7 switched to datafile copy
+input datafile copy RECID=15 STAMP=807958250 file name=/u01/app/oracle/oradata/orcl/ggs_data.327.798611507
+ 
+renamed tempfile 1 to /u01/app/oracle/oradata/orcl/temp.263.787036293 in control file
+
+We now need to perform a recovery of the database
+
+This is the script we will use.
+
+Note how we arrive at the sequence number 145
+
+run {
+set until sequence 145 thread 1;
+recover database;
+}
+
+We need to identify the archive log sequence number which we will use in the SET UNTIL command. RMAN will perform recovery of the database until the log sequence number that we need to determine.
+
+Run the RMAN command LIST BACKUP OF ARCHIVELOG.
+
+Note the last or latest archive log backup for each thread (since this backup was taken from a RAC database).
+
+Then among the two archive log sequence numbers, identify the one which has the lower NEXT_SCN number.
+
+That will be the archive log sequence that we need to make a note of.
+
+Remember, we need to add 1 to this number which is then used in the SET UNTIL SEQUENCE clause of the RMAN RECOVER command.
+
+For example, we see that for thread 1, the most recent archive log backup available belongs to log sequence number 144 while for thread 2 the most recent archive log backup available belongs to log sequence number 139 .
+
+Comparing, the NEXT_SCN value for both those sequence numbers, we can see that for sequence 144 , the NEXT_SCN value is lower (736746 compared with 736760).
+
+Thrd 	Seq     Low SCN    	Low Time  Next SCN   Next Time
+
+  1    144   736706 		28-MAR-12 736746 	28-MAR-12
+
+....
+.....
+
+  2    139   736740 		28-MAR-12 736760 	28-MAR-12
+
+RMAN> run {
+set until sequence 145 thread 1;
+recover database;
+}
+2> 3> 4>
+executing command: SET until clause
+ 
+Starting recover at 21-FEB-13
+using channel ORA_DISK_1
+ 
+starting media recovery
+ 
+channel ORA_DISK_1: starting archived log restore to default destination
+channel ORA_DISK_1: restoring archived log
+archived log thread=1 sequence=144
+channel ORA_DISK_1: restoring archived log
+archived log thread=2 sequence=139
+channel ORA_DISK_1: reading from backup piece /u01/app/oracle/backup/annnf0_tag20130218t093927_0.325.807701967
+channel ORA_DISK_1: piece handle=/u01/app/oracle/backup/annnf0_tag20130218t093927_0.325.807701967 tag=TAG20130218T093927
+channel ORA_DISK_1: restored backup piece 1
+channel ORA_DISK_1: restore complete, elapsed time: 00:00:03
+archived log file name=/u01/app/oracle/flash_recovery_area/ORCL/archivelog/2013_02_21/o1_mf_1_144_8lbwbp3o_.arc thread=1 sequence=144
+archived log file name=/u01/app/oracle/flash_recovery_area/ORCL/archivelog/2013_02_21/o1_mf_2_139_8lbwbp4o_.arc thread=2 sequence=139
+channel default: deleting archived log(s)
+archived log file name=/u01/app/oracle/flash_recovery_area/ORCL/archivelog/2013_02_21/o1_mf_1_144_8lbwbp3o_.arc RECID=270 STAMP=807958744
+channel default: deleting archived log(s)
+archived log file name=/u01/app/oracle/flash_recovery_area/ORCL/archivelog/2013_02_21/o1_mf_2_139_8lbwbp4o_.arc RECID=269 STAMP=807958742
+media recovery complete, elapsed time: 00:00:00
+channel ORA_DISK_1: starting archived log restore to default destination
+channel ORA_DISK_1: restoring archived log
+archived log thread=2 sequence=140
+channel ORA_DISK_1: restoring archived log
+archived log thread=2 sequence=141
+channel ORA_DISK_1: restoring archived log
+archived log thread=2 sequence=142
+channel ORA_DISK_1: restoring archived log
+archived log thread=2 sequence=143
+channel ORA_DISK_1: reading from backup piece /u01/app/oracle/backup/annnf0_tag20130219t103153_0.295.807791515
+channel ORA_DISK_1: piece handle=/u01/app/oracle/backup/annnf0_tag20130219t103153_0.295.807791515 tag=TAG20130219T103153
+channel ORA_DISK_1: restored backup piece 1
+channel ORA_DISK_1: restore complete, elapsed time: 00:00:07
+channel default: deleting archived log(s)
+archived log file name=/u01/app/oracle/flash_recovery_area/ORCL/archivelog/2013_02_21/o1_mf_2_140_8lbwbt41_.arc RECID=273 STAMP=807958750
+channel default: deleting archived log(s)
+archived log file name=/u01/app/oracle/flash_recovery_area/ORCL/archivelog/2013_02_21/o1_mf_2_141_8lbwbt1b_.arc RECID=274 STAMP=807958750
+channel default: deleting archived log(s)
+archived log file name=/u01/app/oracle/flash_recovery_area/ORCL/archivelog/2013_02_21/o1_mf_2_142_8lbwbt66_.arc RECID=272 STAMP=807958747
+channel default: deleting archived log(s)
+archived log file name=/u01/app/oracle/flash_recovery_area/ORCL/archivelog/2013_02_21/o1_mf_2_143_8lbwbvnc_.arc RECID=271 STAMP=807958747
+Finished recover at 21-FEB-13
+
+Open the database with RESETLOGS option
+
+RMAN> sql 'alter database open resetlogs';
+ 
+sql statement: alter database open resetlogs
+
+Note the location of the online redo log files. We can drop and recreate the online redo log file groups if we wnat to rename them from the OMF format in which they are currently present.
+
+SQL> select member from v$logfile;
+ 
+MEMBER
+--------------------------------------------------------------------------------
+/u01/app/oracle/oradata/ORCL/onlinelog/o1_mf_2_8lbwd9kq_.log
+/u01/app/oracle/oradata/ORCL/onlinelog/o1_mf_3_8lbwdb5n_.log
+/u01/app/oracle/oradata/ORCL/onlinelog/o1_mf_1_8lbwd8v5_.log
+/u01/app/oracle/oradata/ORCL/onlinelog/o1_mf_4_8lbwdbqr_.log

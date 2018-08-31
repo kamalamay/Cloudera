@@ -1,0 +1,114 @@
+Dokumentasi install Oracle ASM
+
+Sediakan dulu direktory-nya
+# mkdir -p /oraengine/app/orekel && mkdir -p /oraengine/app/grid
+
+Install oracleasm.rpm
+# rpm -ivh oracleasm*.rpm
+
+Buat group OS
+# groupadd dba && groupadd oinstall && groupadd dboper && groupadd asmadmin && groupadd asmdba && groupadd asmoper
+
+Buat user OS & password-nya
+# useradd -g oinstall -G dba,dboper,asmdba -d /home/orekel orekel && useradd -g oinstall -G dba,asmadmin,asmdba,asmoper -d /home/grid grid
+# passwd orekel
+# passwd grid
+
+Ganti permission di direktory tujuan
+# chown -R orekel:oinstall /oraengine/ && chown -R grid:oinstall /oraengine/app/grid/
+
+Set environment variable
+# Oracle Settings
+TMP=/tmp; export TMP
+TMPDIR=$TMP; export TMPDIR
+
+ORACLE_HOSTNAME=asem; export ORACLE_HOSTNAME
+ORACLE_UNQNAME=asem; export ORACLE_UNQNAME
+ORACLE_BASE=/oraengine/app/orekel; export ORACLE_BASE
+ORACLE_HOME=$ORACLE_BASE/product/11.2.0/db_home1; export ORACLE_HOME
+ORACLE_SID=asem; export ORACLE_SID
+PATH=/usr/sbin:$PATH; export PATH
+PATH=$ORACLE_HOME/bin:$PATH; export PATH
+
+LD_LIBRARY_PATH=$ORACLE_HOME/lib:/lib:/usr/lib; export LD_LIBRARY_PATH
+CLASSPATH=$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib; export CLASSPATH
+
+# Grid Settings
+TMP=/tmp; export TMP
+TMPDIR=$TMP; export TMPDIR
+
+ORACLE_BASE=/oraengine/app/grid; export ORACLE_BASE
+ORACLE_HOME=$ORACLE_BASE/product/11.2.0/grid; export ORACLE_HOME
+ORACLE_SID=+ASM; export ORACLE_SID
+PATH=/usr/sbin:$PATH; export PATH
+PATH=$ORACLE_HOME/bin:$PATH; export PATH
+
+LD_LIBRARY_PATH=$ORACLE_HOME/lib:/lib:/usr/lib; export LD_LIBRARY_PATH
+CLASSPATH=$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib; export CLASSPATH
+
+Add disk ke vmware
+Kalo ga mau di-restart, pake script ini:
+# echo "---"> /sys/class/scsi_host/host0/scan
+
+Kan ada tuh harddisk baru:
+/dev/sdb
+/dev/sdc
+/dev/sdd
+
+fdisk /dev/sdb
+fdisk /dev/sdc
+fdisk /dev/sdd
+Catatan: tekan tombol: n, p, 1, enter, enter, w
+
+Lihat lagi pake fdisk -l terus ganti permission
+# chown grid:asmadmin -R /dev/sdb1 && chmod 660 /dev/sdb1 && chown grid:asmadmin -R /dev/sdc1 && chmod 660 /dev/sdc1 && chown grid:asmadmin -R /dev/sdd1 && chmod 660 /dev/sdd1
+
+Configure ASM:
+[root@asem Desktop]# /etc/init.d/oracleasm configure
+Configuring the Oracle ASM library driver.
+
+This will configure the on-boot properties of the Oracle ASM library
+driver.  The following questions will determine whether the driver is
+loaded on boot and what permissions it will have.  The current values
+will be shown in brackets ('[]').  Hitting <ENTER> without typing an
+answer will keep that current value.  Ctrl-C will abort.
+
+Default user to own the driver interface []: grid
+Default group to own the driver interface []: asmadmin
+Start Oracle ASM library driver on boot (y/n) [n]: y
+Scan for Oracle ASM disks on boot (y/n) [y]: y
+Writing Oracle ASM library driver configuration: done
+Initializing the Oracle ASMLib driver:                     [  OK  ]
+Scanning the system for Oracle ASMLib disks:               [  OK  ]
+[root@asem Desktop]#
+
+Create ASM disk:
+# /etc/init.d/oracleasm createdisk VOL1 /dev/sdb1 && /etc/init.d/oracleasm createdisk VOL2 /dev/sdc1 && /etc/init.d/oracleasm createdisk VOL3 /dev/sdd1
+Marking disk "VOL1" as an ASM disk:                        [  OK  ]
+Marking disk "VOL2" as an ASM disk:                        [  OK  ]
+Marking disk "VOL3" as an ASM disk:                        [  OK  ]
+#
+
+Change permission folder installergrid ke user orekel:
+# chown orekel:oinstall -R /home/grid/installergrid/
+[root@asem Desktop]# ls -lh /home/grid/installergrid/
+total 68K
+drwxr-xr-x.  4 orekel oinstall 4.0K Aug 26  2013 install
+-rw-r--r--.  1 orekel oinstall  30K Aug 27  2013 readme.html
+drwxr-xr-x.  2 orekel oinstall 4.0K Aug 26  2013 response
+drwxr-xr-x.  2 orekel oinstall 4.0K Aug 26  2013 rpm
+-rwxr-xr-x.  1 orekel oinstall 4.8K Aug 26  2013 runcluvfy.sh
+-rwxr-xr-x.  1 orekel oinstall 3.2K Aug 26  2013 runInstaller
+drwxr-xr-x.  2 orekel oinstall 4.0K Aug 26  2013 sshsetup
+drwxr-xr-x. 14 orekel oinstall 4.0K Aug 26  2013 stage
+-rw-r--r--.  1 orekel oinstall  500 Aug 27  2013 welcome.html
+[root@asem Desktop]#
+
+Jalankan xhost:
+# xhost +
+
+# mkdir -p /oraengine/oraInventory && chown -R grid:oinstall /oraengine/oraInventory
+
+Masuk sebagai grid lalu install ASM
+
+Selesai install, cek kembali.

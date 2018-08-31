@@ -1,0 +1,4 @@
+http://oracleinaction.com/duplicate-db-no-db-conn/
+http://www.akadia.com/services/ora_duplicate_database_rman.html
+https://oracle-base.com/articles/11g/duplicate-database-using-rman-11gr2
+https://www.pythian.com/blog/duplicate-from-active-database-using-rman-step-by-step/

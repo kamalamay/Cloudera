@@ -1,0 +1,334 @@
+ADD DISK
+========
+Add 2 disk to VM 5GB each
+
+[grid@spiderman ~]$ asmcmd lsdg
+State    Type  Rebal  Sector  Block       AU  Total_MB  Free_MB  Req_mir_free_MB  Usable_file_MB  Offline_disks  Voting_files  Name
+MOUNTED  HIGH  N         512   4096  1048576     30708    24555                0            8185              0             N  DATA/
+MOUNTED  HIGH  N         512   4096  1048576     15342    13950                0            4650              0             N  FRA/
+[grid@spiderman ~]$
+
+SQL> SELECT NAME,ROUND(TOTAL_MB/1024,2)TOTAL_GB,ROUND(FREE_MB/1024,2)FREE_GB,ROUND(USABLE_FILE_MB/1024,2)USABLE_FILE_GB,STATE FROM V$ASM_DISKGROUP;
+
+NAME                   TOTAL_GB    FREE_GB USABLE_FILE_GB STATE
+-------------------- ---------- ---------- -------------- -----------
+DATA                      29.99      23.98           7.99 MOUNTED
+FRA                       14.98      13.62           4.54 MOUNTED
+
+Elapsed: 00:00:00.13
+SQL> SELECT NAME,MOUNT_STATUS,TOTAL_MB,FREE_MB,PATH FROM V$ASM_DISK ORDER BY 1;
+
+NAME                 MOUNT_S   TOTAL_MB    FREE_MB PATH
+-------------------- ------- ---------- ---------- ---------------------------------------------
+DATA01               CACHED       10236       8185 ORCL:DATA01
+DATA02               CACHED       10236       8185 ORCL:DATA02
+DATA03               CACHED       10236       8185 ORCL:DATA03
+FRA01                CACHED        5114       4650 ORCL:FRA01
+FRA02                CACHED        5114       4650 ORCL:FRA02
+FRA03                CACHED        5114       4650 ORCL:FRA03
+
+6 rows selected.
+
+Elapsed: 00:00:00.09
+SQL>
+
+[root@spiderman ~]# fdisk -l
+
+Disk /dev/sda: 42.9 GB, 42949672960 bytes
+255 heads, 63 sectors/track, 5221 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x000c7f4e
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sda1   *           1        4178    33554432   83  Linux
+/dev/sda2            4178        5222     8387584   82  Linux swap / Solaris
+
+Disk /dev/sdb: 16.1 GB, 16106127360 bytes
+255 heads, 63 sectors/track, 1958 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x87b3fba0
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdb1               1        1958    15727603+  83  Linux
+
+Disk /dev/sdc: 10.7 GB, 10737418240 bytes
+255 heads, 63 sectors/track, 1305 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x31867d23
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdc1               1        1305    10482381   83  Linux
+
+Disk /dev/sdd: 10.7 GB, 10737418240 bytes
+255 heads, 63 sectors/track, 1305 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x5269d1b8
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdd1               1        1305    10482381   83  Linux
+
+Disk /dev/sde: 10.7 GB, 10737418240 bytes
+255 heads, 63 sectors/track, 1305 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x9a22c1b4
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sde1               1        1305    10482381   83  Linux
+
+Disk /dev/sdg: 5368 MB, 5368709120 bytes
+255 heads, 63 sectors/track, 652 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0xbe432ab7
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdg1               1         652     5237158+  83  Linux
+
+Disk /dev/sdh: 5368 MB, 5368709120 bytes
+255 heads, 63 sectors/track, 652 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0xedb6aa05
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdh1               1         652     5237158+  83  Linux
+
+Disk /dev/sdi: 5368 MB, 5368709120 bytes ====================> New LUN
+255 heads, 63 sectors/track, 652 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x00000000
+
+
+Disk /dev/sdj: 5368 MB, 5368709120 bytes ====================> New LUN
+255 heads, 63 sectors/track, 652 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x00000000
+
+
+Disk /dev/sdf: 5368 MB, 5368709120 bytes
+255 heads, 63 sectors/track, 652 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0xf1e0d7cc
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdf1               1         652     5237158+  83  Linux
+/dev/sdf1               1         652     5237158+  83  Linux
+[root@spiderman ~]# fdisk /dev/sdi
+Device contains neither a valid DOS partition table, nor Sun, SGI or OSF disklabel
+Building a new DOS disklabel with disk identifier 0xab94efd6.
+Changes will remain in memory only, until you decide to write them.
+After that, of course, the previous content won't be recoverable.
+
+Warning: invalid flag 0x0000 of partition table 4 will be corrected by w(rite)
+
+WARNING: DOS-compatible mode is deprecated. It's strongly recommended to
+         switch off the mode (command 'c') and change display units to
+         sectors (command 'u').
+
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p
+Partition number (1-4): 1
+First cylinder (1-652, default 1):
+Using default value 1
+Last cylinder, +cylinders or +size{K,M,G} (1-652, default 652):
+Using default value 652
+
+Command (m for help): w
+The partition table has been altered!
+
+Calling ioctl() to re-read partition table.
+Syncing disks.
+[root@spiderman ~]# fdisk /dev/sdj
+Device contains neither a valid DOS partition table, nor Sun, SGI or OSF disklabel
+Building a new DOS disklabel with disk identifier 0xa6b4f782.
+Changes will remain in memory only, until you decide to write them.
+After that, of course, the previous content won't be recoverable.
+
+Warning: invalid flag 0x0000 of partition table 4 will be corrected by w(rite)
+
+WARNING: DOS-compatible mode is deprecated. It's strongly recommended to
+         switch off the mode (command 'c') and change display units to
+         sectors (command 'u').
+
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p
+Partition number (1-4): 1
+First cylinder (1-652, default 1):
+Using default value 1
+Last cylinder, +cylinders or +size{K,M,G} (1-652, default 652):
+Using default value 652
+
+Command (m for help): w
+The partition table has been altered!
+
+Calling ioctl() to re-read partition table.
+Syncing disks.
+[root@spiderman ~]# fdisk -l /dev/sdi
+
+Disk /dev/sdi: 5368 MB, 5368709120 bytes
+255 heads, 63 sectors/track, 652 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0xab94efd6
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdi1               1         652     5237158+  83  Linux
+[root@spiderman ~]# fdisk -l /dev/sdj
+
+Disk /dev/sdj: 5368 MB, 5368709120 bytes
+255 heads, 63 sectors/track, 652 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0xa6b4f782
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdj1               1         652     5237158+  83  Linux
+[root@spiderman ~]# ls -lh /dev/sd*
+brw-rw----. 1 root disk 8,   0 Sep  2 19:54 /dev/sda
+brw-rw----. 1 root disk 8,   1 Sep  2 19:54 /dev/sda1
+brw-rw----. 1 root disk 8,   2 Sep  2 19:54 /dev/sda2
+brw-rw----. 1 root disk 8,  16 Sep  2 19:54 /dev/sdb
+brw-rw----. 1 root disk 8,  17 Sep  2 19:54 /dev/sdb1
+brw-rw----. 1 root disk 8,  32 Sep  2 19:55 /dev/sdc
+brw-rw----. 1 root disk 8,  33 Sep  2 19:55 /dev/sdc1
+brw-rw----. 1 root disk 8,  48 Sep  2 19:55 /dev/sdd
+brw-rw----. 1 root disk 8,  49 Sep  2 19:55 /dev/sdd1
+brw-rw----. 1 root disk 8,  64 Sep  2 19:55 /dev/sde
+brw-rw----. 1 root disk 8,  65 Sep  2 19:55 /dev/sde1
+brw-rw----. 1 root disk 8,  80 Sep  2 19:55 /dev/sdf
+brw-rw----. 1 root disk 8,  81 Sep  2 19:55 /dev/sdf1
+brw-rw----. 1 root disk 8,  96 Sep  2 19:55 /dev/sdg
+brw-rw----. 1 root disk 8,  97 Sep  2 19:55 /dev/sdg1
+brw-rw----. 1 root disk 8, 112 Sep  2 19:55 /dev/sdh
+brw-rw----. 1 root disk 8, 113 Sep  2 19:55 /dev/sdh1
+brw-rw----. 1 root disk 8, 128 Sep  2 19:59 /dev/sdi
+brw-rw----. 1 root disk 8, 129 Sep  2 19:59 /dev/sdi1
+brw-rw----. 1 root disk 8, 144 Sep  2 19:59 /dev/sdj
+brw-rw----. 1 root disk 8, 145 Sep  2 19:59 /dev/sdj1
+[root@spiderman ~]#
+[root@spiderman ~]# ls -lh /dev/sdi1
+brw-rw----. 1 root disk 8, 129 Sep  2 18:21 /dev/sdi1
+[root@spiderman ~]# ls -lh /dev/sdj1
+brw-rw----. 1 root disk 8, 145 Sep  2 18:21 /dev/sdj1
+[root@spiderman ~]# chown -R grid:asmadmin /dev/sdi1
+[root@spiderman ~]# chown -R grid:asmadmin /dev/sdj1
+[root@spiderman ~]# ls -lh /dev/sdi1; ls -lh /dev/sdj1;
+brw-rw----. 1 grid asmadmin 8, 129 Sep  2 18:21 /dev/sdi1
+brw-rw----. 1 grid asmadmin 8, 145 Sep  2 18:21 /dev/sdj1
+[root@spiderman ~]# /etc/init.d/oracleasm createdisk FRA04 /dev/sdi1
+Marking disk "FRA04" as an ASM disk:                       [  OK  ]
+[root@spiderman ~]# /etc/init.d/oracleasm querydisk FRA04 /dev/sdi1
+Disk "FRA04" is a valid ASM disk
+Device "/dev/sdi1" is marked an ASM disk with the label "FRA04"
+[root@spiderman ~]# /etc/init.d/oracleasm createdisk FRA05 /dev/sdj1
+Marking disk "FRA05" as an ASM disk:                       [  OK  ]
+[root@spiderman ~]# /etc/init.d/oracleasm querydisk FRA05 /dev/sdj1
+Disk "FRA05" is a valid ASM disk
+Device "/dev/sdj1" is marked an ASM disk with the label "FRA05"
+[root@spiderman ~]# /etc/init.d/oracleasm listdisks
+DATA01
+DATA02
+DATA03
+FRA01
+FRA02
+FRA03
+FRA04
+FRA05
+[root@spiderman ~]#
+
+SQL> select group_number, name from v$asm_diskgroup;
+
+GROUP_NUMBER NAME
+------------ ------------------------------
+           1 DATA
+           2 FRA
+
+Elapsed: 00:00:00.18
+SQL> COL PATH FOR A35;
+SQL> SELECT MOUNT_STATUS, HEADER_STATUS, MODE_STATUS, STATE, ROUND(TOTAL_MB/1024,2)TOTAL_GB, ROUND(FREE_MB/1024,2)FREE_MB, NAME, PATH, LABEL FROM V$ASM_DISK;
+
+MOUNT_S HEADER_STATU MODE_ST STATE      TOTAL_GB    FREE_MB NAME                           PATH                                LABEL
+------- ------------ ------- -------- ---------- ---------- ------------------------------ ----------------------------------- -------------------------------
+CLOSED  PROVISIONED  ONLINE  NORMAL            0          0                                ORCL:FRA04                          FRA04
+CLOSED  PROVISIONED  ONLINE  NORMAL            0          0                                ORCL:FRA05                          FRA05
+CACHED  MEMBER       ONLINE  NORMAL           10       8.03 DATA01                         ORCL:DATA01                         DATA01
+CACHED  MEMBER       ONLINE  NORMAL           10       8.03 DATA02                         ORCL:DATA02                         DATA02
+CACHED  MEMBER       ONLINE  NORMAL           10       8.03 DATA03                         ORCL:DATA03                         DATA03
+CACHED  MEMBER       ONLINE  NORMAL         4.99        4.7 FRA01                          ORCL:FRA01                          FRA01
+CACHED  MEMBER       ONLINE  NORMAL         4.99        4.7 FRA02                          ORCL:FRA02                          FRA02
+CACHED  MEMBER       ONLINE  NORMAL         4.99        4.7 FRA03                          ORCL:FRA03                          FRA03
+
+8 rows selected.
+
+Elapsed: 00:00:00.29
+SQL> ALTER DISKGROUP FRA ADD DISK 'ORCL:FRA04' NAME FRA04, 'ORCL:FRA05' NAME FRA05;
+
+Diskgroup altered.
+
+Elapsed: 00:00:04.38
+SQL> SELECT MOUNT_STATUS, HEADER_STATUS, MODE_STATUS, STATE, ROUND(TOTAL_MB/1024,2)TOTAL_GB, ROUND(FREE_MB/1024,2)FREE_MB, NAME, PATH, LABEL FROM V$ASM_DISK;
+
+MOUNT_S HEADER_STATU MODE_ST STATE      TOTAL_GB    FREE_MB NAME                           PATH                                LABEL
+------- ------------ ------- -------- ---------- ---------- ------------------------------ ----------------------------------- -------------------------------
+CACHED  MEMBER       ONLINE  NORMAL           10       8.03 DATA01                         ORCL:DATA01                         DATA01
+CACHED  MEMBER       ONLINE  NORMAL           10       8.03 DATA02                         ORCL:DATA02                         DATA02
+CACHED  MEMBER       ONLINE  NORMAL           10       8.03 DATA03                         ORCL:DATA03                         DATA03
+CACHED  MEMBER       ONLINE  NORMAL         4.99       4.81 FRA01                          ORCL:FRA01                          FRA01
+CACHED  MEMBER       ONLINE  NORMAL         4.99       4.81 FRA02                          ORCL:FRA02                          FRA02
+CACHED  MEMBER       ONLINE  NORMAL         4.99       4.81 FRA03                          ORCL:FRA03                          FRA03
+CACHED  MEMBER       ONLINE  NORMAL         4.99       4.82 FRA04                          ORCL:FRA04                          FRA04
+CACHED  MEMBER       ONLINE  NORMAL         4.99       4.82 FRA05                          ORCL:FRA05                          FRA05
+
+8 rows selected.
+
+Elapsed: 00:00:00.11
+SQL> !asmcmd lsdg
+State    Type  Rebal  Sector  Block       AU  Total_MB  Free_MB  Req_mir_free_MB  Usable_file_MB  Offline_disks  Voting_files  Name
+MOUNTED  HIGH  N         512   4096  1048576     30708    24681                0            8227              0             N  DATA/
+MOUNTED  HIGH  N         512   4096  1048576     25570    24651            10228            4807              0             N  FRA/
+
+SQL> ALTER DISKGROUP FRA REBALANCE POWER 11;
+
+Diskgroup altered.
+
+Elapsed: 00:00:04.12
+SQL> SELECT NAME,ROUND(TOTAL_MB/1024,2)TOTAL_GB,ROUND(FREE_MB/1024,2)FREE_GB,ROUND(USABLE_FILE_MB/1024,2)USABLE_FILE_GB,STATE FROM V$ASM_DISKGROUP;
+
+NAME                             TOTAL_GB    FREE_GB USABLE_FILE_GB STATE
+------------------------------ ---------- ---------- -------------- -----------
+DATA                                29.99       24.1           8.03 MOUNTED
+FRA                                 24.97      24.07           4.69 MOUNTED
+
+Elapsed: 00:00:00.09
+SQL> !asmcmd lsdg
+State    Type  Rebal  Sector  Block       AU  Total_MB  Free_MB  Req_mir_free_MB  Usable_file_MB  Offline_disks  Voting_files  Name
+MOUNTED  HIGH  N         512   4096  1048576     30708    24681                0            8227              0             N  DATA/
+MOUNTED  HIGH  N         512   4096  1048576     25570    24651            10228            4807              0             N  FRA/
+
+SQL>

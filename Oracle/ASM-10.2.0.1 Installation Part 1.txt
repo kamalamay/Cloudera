@@ -1,0 +1,343 @@
+# Oracle Settings
+TMP=/tmp; export TMP
+TMPDIR=$TMP; export TMPDIR
+
+ORACLE_HOSTNAME=logan.xmen.com; export ORACLE_HOSTNAME
+ORACLE_UNQNAME=DBPROD; export ORACLE_UNQNAME
+ORACLE_BASE=/x01/app/oracle; export ORACLE_BASE
+ORACLE_HOME=$ORACLE_BASE/product/10.2.0/db_1; export ORACLE_HOME
+ORACLE_SID=DBPROD; export ORACLE_SID
+PATH=/usr/sbin:$PATH; export PATH
+PATH=$ORACLE_HOME/bin:$PATH; export PATH
+
+LD_LIBRARY_PATH=$ORACLE_HOME/lib:/lib:/usr/lib; export LD_LIBRARY_PATH
+CLASSPATH=$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib; export CLASSPATH
+
+[root@logan oracle]# /sbin/fdisk -l
+
+Disk /dev/sda: 42.9 GB, 42949672960 bytes
+255 heads, 63 sectors/track, 5221 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sda1   *           1        4830    38796943+  83  Linux
+/dev/sda2            4831        5221     3140707+  82  Linux swap / Solaris
+
+Disk /dev/sdb: 32.2 GB, 32212254720 bytes
+255 heads, 63 sectors/track, 3916 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdb1               1        3916    31455238+  83  Linux
+
+Disk /dev/sdc: 21.4 GB, 21474836480 bytes
+255 heads, 63 sectors/track, 2610 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+
+Disk /dev/sdc doesn't contain a valid partition table
+
+Disk /dev/sdd: 21.4 GB, 21474836480 bytes
+255 heads, 63 sectors/track, 2610 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+
+Disk /dev/sdd doesn't contain a valid partition table
+
+Disk /dev/sde: 10.7 GB, 10737418240 bytes
+255 heads, 63 sectors/track, 1305 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+
+Disk /dev/sde doesn't contain a valid partition table
+
+Disk /dev/sdf: 10.7 GB, 10737418240 bytes
+255 heads, 63 sectors/track, 1305 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+
+Disk /dev/sdf doesn't contain a valid partition table
+[root@logan oracle]# /sbin/fdisk /dev/sdd
+Device contains neither a valid DOS partition table, nor Sun, SGI or OSF disklabel
+Building a new DOS disklabel. Changes will remain in memory only,
+until you decide to write them. After that, of course, the previous
+content won't be recoverable.
+
+
+The number of cylinders for this disk is set to 2610.
+There is nothing wrong with that, but this is larger than 1024,
+and could in certain setups cause problems with:
+1) software that runs at boot time (e.g., old versions of LILO)
+2) booting and partitioning software from other OSs
+   (e.g., DOS FDISK, OS/2 FDISK)
+Warning: invalid flag 0x0000 of partition table 4 will be corrected by w(rite)
+
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p
+Partition number (1-4): 1
+First cylinder (1-2610, default 1):
+Using default value 1
+Last cylinder or +size or +sizeM or +sizeK (1-2610, default 2610):
+Using default value 2610
+
+Command (m for help): w
+The partition table has been altered!
+
+Calling ioctl() to re-read partition table.
+Syncing disks.
+[root@logan oracle]# /sbin/fdisk /dev/sde
+Device contains neither a valid DOS partition table, nor Sun, SGI or OSF disklabel
+Building a new DOS disklabel. Changes will remain in memory only,
+until you decide to write them. After that, of course, the previous
+content won't be recoverable.
+
+
+The number of cylinders for this disk is set to 1305.
+There is nothing wrong with that, but this is larger than 1024,
+and could in certain setups cause problems with:
+1) software that runs at boot time (e.g., old versions of LILO)
+2) booting and partitioning software from other OSs
+   (e.g., DOS FDISK, OS/2 FDISK)
+Warning: invalid flag 0x0000 of partition table 4 will be corrected by w(rite)
+
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p
+Partition number (1-4): 1
+First cylinder (1-1305, default 1):
+Using default value 1
+Last cylinder or +size or +sizeM or +sizeK (1-1305, default 1305):
+Using default value 1305
+
+Command (m for help): w
+The partition table has been altered!
+
+Calling ioctl() to re-read partition table.
+Syncing disks.
+[root@logan oracle]# /sbin/fdisk /dev/sdc
+Device contains neither a valid DOS partition table, nor Sun, SGI or OSF disklabel
+Building a new DOS disklabel. Changes will remain in memory only,
+until you decide to write them. After that, of course, the previous
+content won't be recoverable.
+
+
+The number of cylinders for this disk is set to 2610.
+There is nothing wrong with that, but this is larger than 1024,
+and could in certain setups cause problems with:
+1) software that runs at boot time (e.g., old versions of LILO)
+2) booting and partitioning software from other OSs
+   (e.g., DOS FDISK, OS/2 FDISK)
+Warning: invalid flag 0x0000 of partition table 4 will be corrected by w(rite)
+
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p
+Partition number (1-4):
+Value out of range.
+Partition number (1-4):
+Value out of range.
+Partition number (1-4): 1
+First cylinder (1-2610, default 1):
+Using default value 1
+Last cylinder or +size or +sizeM or +sizeK (1-2610, default 2610):
+Using default value 2610
+
+Command (m for help): w
+The partition table has been altered!
+
+Calling ioctl() to re-read partition table.
+Syncing disks.
+[root@logan oracle]# /sbin/fdisk /dev/sdf
+Device contains neither a valid DOS partition table, nor Sun, SGI or OSF disklabel
+Building a new DOS disklabel. Changes will remain in memory only,
+until you decide to write them. After that, of course, the previous
+content won't be recoverable.
+
+
+The number of cylinders for this disk is set to 1305.
+There is nothing wrong with that, but this is larger than 1024,
+and could in certain setups cause problems with:
+1) software that runs at boot time (e.g., old versions of LILO)
+2) booting and partitioning software from other OSs
+   (e.g., DOS FDISK, OS/2 FDISK)
+Warning: invalid flag 0x0000 of partition table 4 will be corrected by w(rite)
+
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p
+Partition number (1-4): 1
+First cylinder (1-1305, default 1):
+Using default value 1
+Last cylinder or +size or +sizeM or +sizeK (1-1305, default 1305):
+Using default value 1305
+
+Command (m for help): w
+The partition table has been altered!
+
+Calling ioctl() to re-read partition table.
+Syncing disks.
+[root@logan oracle]# /sbin/fdisk -l
+
+Disk /dev/sda: 42.9 GB, 42949672960 bytes
+255 heads, 63 sectors/track, 5221 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sda1   *           1        4830    38796943+  83  Linux
+/dev/sda2            4831        5221     3140707+  82  Linux swap / Solaris
+
+Disk /dev/sdb: 32.2 GB, 32212254720 bytes
+255 heads, 63 sectors/track, 3916 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdb1               1        3916    31455238+  83  Linux
+
+Disk /dev/sdc: 21.4 GB, 21474836480 bytes
+255 heads, 63 sectors/track, 2610 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdc1               1        2610    20964793+  83  Linux
+
+Disk /dev/sdd: 21.4 GB, 21474836480 bytes
+255 heads, 63 sectors/track, 2610 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdd1               1        2610    20964793+  83  Linux
+
+Disk /dev/sde: 10.7 GB, 10737418240 bytes
+255 heads, 63 sectors/track, 1305 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sde1               1        1305    10482381   83  Linux
+
+Disk /dev/sdf: 10.7 GB, 10737418240 bytes
+255 heads, 63 sectors/track, 1305 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdf1               1        1305    10482381   83  Linux
+[root@logan oracle]# /sbin/scsi_id -g -u -s /block/sdc
+36000c29ef1824335f42f5b26201e5af8
+[root@logan oracle]# /sbin/scsi_id -g -u -s /block/sdd
+36000c2990b6d176f54cc2c2d96ae6a52
+[root@logan oracle]# /sbin/scsi_id -g -u -s /block/sde
+36000c29877b8504c4c6d18373d9bb870
+[root@logan oracle]# /sbin/scsi_id -g -u -s /block/sdf
+36000c29318d214b125791dc25a450396
+[root@logan oracle]# vi /etc/udev/rules.d/99-oracle-asmdevices.rules
+[root@logan oracle]# cat /etc/udev/rules.d/99-oracle-asmdevices.rules
+KERNEL=="sd?1", BUS=="scsi", PROGRAM=="/sbin/scsi_id -g -u -s /block/$parent", RESULT=="36000c29ef1824335f42f5b26201e5af8", NAME="DATA01_20G", OWNER="oracle", GROUP="asmadmin", MODE="0660"
+KERNEL=="sd?1", BUS=="scsi", PROGRAM=="/sbin/scsi_id -g -u -s /block/$parent", RESULT=="36000c2990b6d176f54cc2c2d96ae6a52", NAME="DATA02_20G", OWNER="oracle", GROUP="asmadmin", MODE="0660"
+KERNEL=="sd?1", BUS=="scsi", PROGRAM=="/sbin/scsi_id -g -u -s /block/$parent", RESULT=="36000c29877b8504c4c6d18373d9bb870", NAME="FRA01_10G", OWNER="oracle", GROUP="asmadmin", MODE="0660"
+KERNEL=="sd?1", BUS=="scsi", PROGRAM=="/sbin/scsi_id -g -u -s /block/$parent", RESULT=="36000c29318d214b125791dc25a450396", NAME="FRA02_10G", OWNER="oracle", GROUP="asmadmin", MODE="0660"
+[root@logan oracle]# /sbin/partprobe /dev/sdc1
+[root@logan oracle]# /sbin/partprobe /dev/sdd1
+[root@logan oracle]# /sbin/partprobe /dev/sde1
+[root@logan oracle]# /sbin/partprobe /dev/sdf1
+[root@logan oracle]# udevtest /block/sdc/sdc1
+main: looking at device '/block/sdc/sdc1' from subsystem 'block'
+udev_rules_get_name: add symlink 'disk/by-id/scsi-36000c29ef1824335f42f5b26201e5af8-part1'
+udev_rules_get_name: add symlink 'disk/by-path/pci-0000:00:10.0-scsi-0:0:2:0-part1'
+run_program: '/lib/udev/vol_id --export /dev/.tmp-8-33'
+run_program: '/lib/udev/vol_id' returned with status 4
+run_program: '/sbin/scsi_id -g -u -s /block/sdc'
+run_program: '/sbin/scsi_id' (stdout) '36000c29ef1824335f42f5b26201e5af8'
+run_program: '/sbin/scsi_id' returned with status 0
+udev_rules_get_name: rule applied, 'sdc1' becomes 'DATA01_20G'
+udev_device_event: device '/block/sdc/sdc1' already in database, validate currently present symlinks
+udev_node_add: creating device node '/dev/DATA01_20G', major = '8', minor = '33', mode = '0660', uid = '500', gid = '503'
+udev_node_add: creating symlink '/dev/disk/by-id/scsi-36000c29ef1824335f42f5b26201e5af8-part1' to '../../DATA01_20G'
+udev_node_add: creating symlink '/dev/disk/by-path/pci-0000:00:10.0-scsi-0:0:2:0-part1' to '../../DATA01_20G'
+main: run: 'socket:/org/kernel/dm/multipath_event'
+main: run: 'socket:/org/kernel/udev/monitor'
+main: run: '/lib/udev/udev_run_devd'
+main: run: 'socket:/org/freedesktop/hal/udev_event'
+main: run: '/sbin/pam_console_apply /dev/DATA01_20G /dev/disk/by-id/scsi-36000c29ef1824335f42f5b26201e5af8-part1 /dev/disk/by-path/pci-0000:00:10.0-scsi-0:0:2:0-part1'
+[root@logan oracle]# udevtest /block/sdd/sdd1
+main: looking at device '/block/sdd/sdd1' from subsystem 'block'
+udev_rules_get_name: add symlink 'disk/by-id/scsi-36000c2990b6d176f54cc2c2d96ae6a52-part1'
+udev_rules_get_name: add symlink 'disk/by-path/pci-0000:00:10.0-scsi-0:0:3:0-part1'
+run_program: '/lib/udev/vol_id --export /dev/.tmp-8-49'
+run_program: '/lib/udev/vol_id' returned with status 4
+run_program: '/sbin/scsi_id -g -u -s /block/sdd'
+run_program: '/sbin/scsi_id' (stdout) '36000c2990b6d176f54cc2c2d96ae6a52'
+run_program: '/sbin/scsi_id' returned with status 0
+run_program: '/sbin/scsi_id -g -u -s /block/sdd'
+run_program: '/sbin/scsi_id' (stdout) '36000c2990b6d176f54cc2c2d96ae6a52'
+run_program: '/sbin/scsi_id' returned with status 0
+udev_rules_get_name: rule applied, 'sdd1' becomes 'DATA02_20G'
+udev_device_event: device '/block/sdd/sdd1' already in database, validate currently present symlinks
+udev_node_add: creating device node '/dev/DATA02_20G', major = '8', minor = '49', mode = '0660', uid = '500', gid = '503'
+udev_node_add: creating symlink '/dev/disk/by-id/scsi-36000c2990b6d176f54cc2c2d96ae6a52-part1' to '../../DATA02_20G'
+udev_node_add: creating symlink '/dev/disk/by-path/pci-0000:00:10.0-scsi-0:0:3:0-part1' to '../../DATA02_20G'
+main: run: 'socket:/org/kernel/dm/multipath_event'
+main: run: 'socket:/org/kernel/udev/monitor'
+main: run: '/lib/udev/udev_run_devd'
+main: run: 'socket:/org/freedesktop/hal/udev_event'
+main: run: '/sbin/pam_console_apply /dev/DATA02_20G /dev/disk/by-id/scsi-36000c2990b6d176f54cc2c2d96ae6a52-part1 /dev/disk/by-path/pci-0000:00:10.0-scsi-0:0:3:0-part1'
+[root@logan oracle]# udevtest /block/sde/sde1
+main: looking at device '/block/sde/sde1' from subsystem 'block'
+udev_rules_get_name: add symlink 'disk/by-id/scsi-36000c29877b8504c4c6d18373d9bb870-part1'
+udev_rules_get_name: add symlink 'disk/by-path/pci-0000:00:10.0-scsi-0:0:4:0-part1'
+run_program: '/lib/udev/vol_id --export /dev/.tmp-8-65'
+run_program: '/lib/udev/vol_id' returned with status 4
+run_program: '/sbin/scsi_id -g -u -s /block/sde'
+run_program: '/sbin/scsi_id' (stdout) '36000c29877b8504c4c6d18373d9bb870'
+run_program: '/sbin/scsi_id' returned with status 0
+run_program: '/sbin/scsi_id -g -u -s /block/sde'
+run_program: '/sbin/scsi_id' (stdout) '36000c29877b8504c4c6d18373d9bb870'
+run_program: '/sbin/scsi_id' returned with status 0
+run_program: '/sbin/scsi_id -g -u -s /block/sde'
+run_program: '/sbin/scsi_id' (stdout) '36000c29877b8504c4c6d18373d9bb870'
+run_program: '/sbin/scsi_id' returned with status 0
+udev_rules_get_name: rule applied, 'sde1' becomes 'FRA01_10G'
+udev_device_event: device '/block/sde/sde1' already in database, validate currently present symlinks
+udev_node_add: creating device node '/dev/FRA01_10G', major = '8', minor = '65', mode = '0660', uid = '500', gid = '503'
+udev_node_add: creating symlink '/dev/disk/by-id/scsi-36000c29877b8504c4c6d18373d9bb870-part1' to '../../FRA01_10G'
+udev_node_add: creating symlink '/dev/disk/by-path/pci-0000:00:10.0-scsi-0:0:4:0-part1' to '../../FRA01_10G'
+main: run: 'socket:/org/kernel/dm/multipath_event'
+main: run: 'socket:/org/kernel/udev/monitor'
+main: run: '/lib/udev/udev_run_devd'
+main: run: 'socket:/org/freedesktop/hal/udev_event'
+main: run: '/sbin/pam_console_apply /dev/FRA01_10G /dev/disk/by-id/scsi-36000c29877b8504c4c6d18373d9bb870-part1 /dev/disk/by-path/pci-0000:00:10.0-scsi-0:0:4:0-part1'
+[root@logan oracle]# udevtest /block/sdf/sdf1
+main: looking at device '/block/sdf/sdf1' from subsystem 'block'
+udev_rules_get_name: add symlink 'disk/by-id/scsi-36000c29318d214b125791dc25a450396-part1'
+udev_rules_get_name: add symlink 'disk/by-path/pci-0000:00:10.0-scsi-0:0:5:0-part1'
+run_program: '/lib/udev/vol_id --export /dev/.tmp-8-81'
+run_program: '/lib/udev/vol_id' returned with status 4
+run_program: '/sbin/scsi_id -g -u -s /block/sdf'
+run_program: '/sbin/scsi_id' (stdout) '36000c29318d214b125791dc25a450396'
+run_program: '/sbin/scsi_id' returned with status 0
+run_program: '/sbin/scsi_id -g -u -s /block/sdf'
+run_program: '/sbin/scsi_id' (stdout) '36000c29318d214b125791dc25a450396'
+run_program: '/sbin/scsi_id' returned with status 0
+run_program: '/sbin/scsi_id -g -u -s /block/sdf'
+run_program: '/sbin/scsi_id' (stdout) '36000c29318d214b125791dc25a450396'
+run_program: '/sbin/scsi_id' returned with status 0
+run_program: '/sbin/scsi_id -g -u -s /block/sdf'
+run_program: '/sbin/scsi_id' (stdout) '36000c29318d214b125791dc25a450396'
+run_program: '/sbin/scsi_id' returned with status 0
+udev_rules_get_name: rule applied, 'sdf1' becomes 'FRA02_10G'
+udev_device_event: device '/block/sdf/sdf1' already in database, validate currently present symlinks
+udev_node_add: creating device node '/dev/FRA02_10G', major = '8', minor = '81', mode = '0660', uid = '500', gid = '503'
+udev_node_add: creating symlink '/dev/disk/by-id/scsi-36000c29318d214b125791dc25a450396-part1' to '../../FRA02_10G'
+udev_node_add: creating symlink '/dev/disk/by-path/pci-0000:00:10.0-scsi-0:0:5:0-part1' to '../../FRA02_10G'
+main: run: 'socket:/org/kernel/dm/multipath_event'
+main: run: 'socket:/org/kernel/udev/monitor'
+main: run: '/lib/udev/udev_run_devd'
+main: run: 'socket:/org/freedesktop/hal/udev_event'
+main: run: '/sbin/pam_console_apply /dev/FRA02_10G /dev/disk/by-id/scsi-36000c29318d214b125791dc25a450396-part1 /dev/disk/by-path/pci-0000:00:10.0-scsi-0:0:5:0-part1'
+[root@logan oracle]# echo RESTART UDEV
+RESTART UDEV
+[root@logan oracle]# /sbin/udevcontrol reload_rules
+[root@logan oracle]# BELUM SELESAI

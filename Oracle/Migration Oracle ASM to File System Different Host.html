@@ -1,0 +1,112 @@
+<title>Migration Oracle ASM to File System Different Host</title>
+<body>
+ <font face="Segoe UI"><p align="justify">
+   <b>Assalamu'alaikum</b> ..<br>
+   How to migration Oracle Database 11G ASM to other machine in file system?<br>
+   Source: Oracle Database Enterprise 11.2.0.4 64-bit Linux (ASM)<br>
+   Target: Oracle Database Enterprise 11.2.0.4 64-bit Linux (File System).<br>
+   <b>Step 1: Backup source database using RMAN</b><br>
+   --01BackupSource.png
+    </font>
+    </tt>
+ </p></font>
+ 
+ <p align="justify"><font face="Segoe UI">
+ 	<b>Step 2: Create pfile from Source DB</b><br>
+ 	<tt>SQL> CREATE PFILE='/home/orekel/rmanBackup/initasem.ora' from spfile';</tt>
+ </font></p>
+
+ <p align="justify"><font face="Segoe UI">
+ 	<b>Note: The target has an Oracle instance (PROD) and we will drop it first ..</b><br>
+ 	--01InfoTarget.png
+ 	<br>Shutdown first:<br>
+ 	--02ShutdownInstanceTarget.png
+ </font></p>
+
+ <p align="justify"><font face="Segoe UI">
+ 	<b>Step 3: Drop Existing DB on Target</b><br>
+ 	--03DropDBTarget.png
+ </font></p>
+
+ <p align="justify"><font face="Segoe UI">
+ 	<b>Step 4: Copy Backup to Target Machine</b><br>
+ 	--04scpBackuptoTarget
+ </font></p>
+
+ <p align="justify"><font face="Segoe UI">
+ 	<b>Step 5: Extract Backup on Target</b><br>
+ 	--05ExtractBackuptoTarget.png
+ </font></p>
+
+ <p align="justify"><font face="Segoe UI">
+ 	<b>Step 6: Edit the pfile</b><br>
+ 	<b>Original pfile:</b><br>
+ 	--06initasem_original.ora.png<br>
+ 	<b>Edit to be:</b><br>
+ 	--07initasem.ora.png
+ </font></p>
+
+ <p align="justify"><font face="Segoe UI">
+ 	<b>Step 7: Startup Nomount</b><br>
+ 	Setting the new environment first, such as ORACLE_SID. In this case I modified <b>.bash_profile</b> and compile it.<br>
+ 	--08StartupNomount.png
+ </font></p>
+
+ <p align="justify"><font face="Segoe UI">
+ 	<b>Step 8: Restore Controlfile</b><br>
+ 	--09RestoreControlfile.png
+ </font></p>
+
+ <p align="justify"><font face="Segoe UI">
+ 	<b>Step 9: Mount the Oracle Instance</b><br>
+ 	--10MountDB.png
+ </font></p>
+
+ <p align="justify"><font face="Segoe UI">
+ 	<b>Step 10: Catalog RMAN</b><br>
+ 	--11CatalogRMAN.png<br>
+ 	We can see the backup:<br>
+ 	--12ListBackupSummary.png
+ </font></p>
+
+ <p align="justify"><font face="Segoe UI">
+ 	<b>Step 11: Restore the DB</b><br>
+ 	--13RestoreScript.png
+ 	<br>output:<br>
+ 	--13RestoreLog.png
+ </font></p>
+
+ <p align="justify"><font face="Segoe UI">
+ 	<b>Step 12: Query the SCN to Recover</b><br>
+ 	--14QuerySCN.png
+ </font></p>
+
+ <p align="justify"><font face="Segoe UI">
+ 	<b>Step 13: Recover Set Until SCN</b><br>
+ 	--15SetUntilRecover.png
+ </font></p>
+
+ <p align="justify"><font face="Segoe UI">
+ 	<b>Step 14: Open Resetlogs</b><br>
+ 	--16OpenResetlogs.png
+ </font></p>
+
+ <p align="justify"><font face="Segoe UI">
+ 	<b>Step 15: Final Check</b><br>
+ 	--17Finish.png
+ </font></p>
+
+ <p align="justify"><font face="Segoe UI">
+ 	<b>Step 16: Create spfile</b><br>
+ 	--18Createspfile.png
+ </font></p>
+
+ <p align="justify"><font face="Segoe UI">
+ 	<b><i>done</i></b>
+ </font></p>
+
+ <p align="justify"><font face="Segoe UI">
+ 	Wassalamu'alaikum<br>
+ 	by Aziz Prastyo Wibowo.
+ </font></p>
+</body>

@@ -1,0 +1,66 @@
+WE ARE USING RAWDEVICES, DELETE UDEV BEFORE
+
+[root@logan Server]# vi /etc/sysconfig/rawdevices
+[root@logan Server]# cat /etc/sysconfig/rawdevices
+# raw device bindings
+# format:  <rawdev> <major> <minor>
+#          <rawdev> <blockdev>
+# example: /dev/raw/raw1 /dev/sda1
+#          /dev/raw/raw2 8 5
+/dev/raw/raw1 /dev/sdc1
+/dev/raw/raw2 /dev/sdd1
+/dev/raw/raw3 /dev/sde1
+/dev/raw/raw4 /dev/sdf1
+[root@logan Server]# service rawdevices restart
+Assigning devices:
+           /dev/raw/raw1  -->   /dev/sdc1
+/dev/raw/raw1:  bound to major 8, minor 33
+           /dev/raw/raw2  -->   /dev/sdd1
+/dev/raw/raw2:  bound to major 8, minor 49
+           /dev/raw/raw3  -->   /dev/sde1
+/dev/raw/raw3:  bound to major 8, minor 65
+           /dev/raw/raw4  -->   /dev/sdf1
+/dev/raw/raw4:  bound to major 8, minor 81
+done
+[root@logan Server]# ln -s /dev/raw/raw1 /x01/asmDATA01
+[root@logan Server]# ln -s /dev/raw/raw2 /x01/asmDATA02
+[root@logan Server]# ln -s /dev/raw/raw3 /x01/asmFRA01
+[root@logan Server]# ln -s /dev/raw/raw4 /x01/asmFRA02
+[root@logan Server]# ls -lh /x01
+total 40K
+drwxr-xr-x 3 oracle oinstall 4.0K Jan 24 22:03 app
+lrwxrwxrwx 1 root   root       13 Jan 25 16:48 asmDATA01 -> /dev/raw/raw1
+lrwxrwxrwx 1 root   root       13 Jan 25 16:48 asmDATA02 -> /dev/raw/raw2
+lrwxrwxrwx 1 root   root       13 Jan 25 16:48 asmFRA01 -> /dev/raw/raw3
+lrwxrwxrwx 1 root   root       13 Jan 25 16:48 asmFRA02 -> /dev/raw/raw4
+drwx------ 2 oracle dba       16K Jan 24 22:00 lost+found
+[root@logan Server]# vi /etc/rc.local
+[root@logan Server]# cat /etc/rc.local
+#!/bin/sh
+#
+# This script will be executed *after* all the other init scripts.
+# You can put your own initialization stuff in here if you don't
+# want to do the full Sys V style init stuff.
+
+touch /var/lock/subsys/local
+chown oracle:oinstall /dev/raw/raw1
+chown oracle:oinstall /dev/raw/raw2
+chown oracle:oinstall /dev/raw/raw3
+chown oracle:oinstall /dev/raw/raw4
+chmod 600 /dev/raw/raw1
+chmod 600 /dev/raw/raw2
+chmod 600 /dev/raw/raw3
+chmod 600 /dev/raw/raw4
+[root@logan Server]#
+
+Tambahin export DISABLE_HUGETLBFS=1 di .bash_profile
+
+[oracle@logan ~]$ cd $ORACLE_HOME/bin
+[oracle@logan bin]$ mv oracle oracle.bin
+[oracle@logan bin]$ vi oracle
+[oracle@logan bin]$ chmod +x oracle
+[oracle@logan bin]$ cat oracle
+#!/bin/bash
+export DISABLE_HUGETLBFS=1
+exec $ORACLE_HOME/bin/oracle.bin $@
+[oracle@logan bin]$

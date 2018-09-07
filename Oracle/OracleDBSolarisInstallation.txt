@@ -1,0 +1,351 @@
+- folder source
+mkdir /sources
+chmod -R 775 /sources
+chown -R oracle:dba /sources
+
+
+o>. Prereq
+-- verify packages
+# pkginfo -i SUNWarc SUNWbtool SUNWhea SUNWlibC SUNWlibm SUNWlibms SUNWsprot SUNWtoo SUNWi1of SUNWi1cs SUNWi15cs SUNWxwfnt SUNWcsl
+SUNWarc
+SUNWbtool
+SUNWcsl
+SUNWhea
+SUNWlibC
+SUNWlibm
+SUNWlibms
+SUNWsprot
+SUNWtoo
+SUNWi1of (ISO8859-1)
+SUNWi1cs (ISO8859-15)
+SUNWi15cs
+SUNWxwfnt
+
+
+
+o>. verify swap, RAM, and OS Version
+Make sure that swap (double value of RAM)  OR RAM MORE THAN 16 GB Phy - swap 16GB
+#swap -l
+#/usr/sbin/prtconf | grep -i memory
+#uname -r
+
+
+o>. ip hosts
+192.168.56.99 ossolaris
+
+
+o>. user (as user needed)
+# groupadd -g 100 dba
+# useradd -u 101 -g dba -d /export/home/oracle -m oracle
+# useradd -u 102 -g dba -d /export/home/grid -m grid
+
+groupadd -g 54321 oinstall
+groupadd -g 54322 dba
+groupadd -g 54323 asmdba
+groupadd -g 54324 asmoper
+groupadd -g 54325 asmadmin
+groupadd -g 54326 oper
+
+usermod -g oinstall -G dba,oper oracle
+
+#rac
+groupadd oinstall
+groupadd dba 
+groupadd oper 
+groupadd backupdba
+groupadd dgdba 
+groupadd kmdba 
+groupadd asmdba 
+groupadd asmoper 
+groupadd asmadmin
+groupadd racdba
+
+usermod -g oinstall -G dba,oper,dgdba,kmdba,asmdba,asmoper,asmadmin,racdba oracle
+
+
+
+
+# passwd grid
+grid123
+# passwd oracle
+oracle123
+
+
+-- Profile grid_env (as user needed)
+[$ cat .profile
+export PATH=/usr/bin:/usr/sbin
+export ORACLE_HOME=/apps/grid/product/11.2.0/grid
+export PATH=$PATH:$ORACLE_HOME/bin
+export ORACLE_SID=+ASM
+
+if [ -f /usr/bin/less ]; then
+    export PAGER="/usr/bin/less -ins"
+elif [ -f /usr/bin/more ]; then
+    export PAGER="/usr/bin/more -s"
+fi
+
+case ${SHELL} in
+*bash)
+    typeset +x PS1="\u@\h:\w\\$ "
+    ;;
+esac
+
+
+-- Profile db_env (as user needed)
+$ cat .profile
+export PATH=/usr/bin:/usr/sbin
+export ORACLE_HOME=/apps/oracle/product/11.2.0/dbhome_1
+export PATH=$PATH:$ORACLE_HOME/bin
+export ORACLE_SID=ad1apps
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ORACLE_HOME/lib
+
+if [ -f /usr/bin/less ]; then
+    export PAGER="/usr/bin/less -ins"
+elif [ -f /usr/bin/more ]; then
+    export PAGER="/usr/bin/more -s"
+fi
+
+
+ 
+o>. Setup Directories
+mkdir -p /apps/grid/product/11.2.0/grid
+mkdir -p /apps/oraInventory 
+mkdir -p /apps/oracle/product/11.2.0/dbhome_1
+
+chown -R grid:dba /apps
+chmod -R 775 /apps
+
+
+o>. Set Kernel Parameters
+
+-- Solaris Kernel Tweaking 
+projadd -G dba -K "project.max-shm-memory=(priv,16g,deny)" user.oracle
+projmod -sK "project.max-sem-nsems=(priv,512,deny)" user.oracle
+projmod -sK "project.max-sem-ids=(priv,128,deny)" user.oracle
+projmod -sK "project.max-shm-ids=(priv,128,deny)" user.oracle
+projmod -sK "process.max-file-descriptor=(priv,65536,deny)" user.oracle
+*(add/change shm memory = 50% from ram physical)
+ projmod -sK "project.max-shm-memory=(priv,64g,deny)" user.oracle
+
+-- etc system -> noted***
+bash-4.4$ cat /etc/system
+## ZFS CACHE ##
+set user_reserve_hint_pct=90
+#For example, a sample /etc/system entry setting SHMMAX = 64GB.
+set shmsys:shminfo_shmmax=68719476736
+set semsys:seminfo_semmni=1024
+set semsys:seminfo_semmsl=1024
+set shmsys:shminfo_shmmni=100
+
+
+-- check etc project
+bash-4.4$ cat /etc/project
+system:0::::
+user.root:1::::
+noproject:2::::
+default:3::::
+group.staff:10::::
+*(add/change shm memory = 50% from ram physical)
+user.oracle:100::oracle::project.max-shm-memory=(priv,96636764160,deny)
+ 
+ 
+check user:
+  ulimit -a
+  ulimit -n 65536
+  ulimit -s 10240
+  
+
+
+
+o>. Configure Storage -- OS technical (config in below doc)
+root@node1:~# format 
+format>fdisk
+format>partition
+partition>0
+partition>label
+
+
+
+
+--OCRVOTE
+chown oracle:oinstall /dev/rdsk/c1d2s*
+chown oracle:oinstall /dev/rdsk/c1d3s*
+chown oracle:oinstall /dev/rdsk/c1d25s*
+
+--DATA
+chown oracle:oinstall /dev/rdsk/c1d4s*
+
+-- ARCHDB
+chown oracle:oinstall /dev/rdsk/c1d5s*
+
+-- REDO01
+chown oracle:oinstall /dev/rdsk/c1d6s*
+chown oracle:oinstall /dev/rdsk/c1d7s*
+chown oracle:oinstall /dev/rdsk/c1d8s*
+chown oracle:oinstall /dev/rdsk/c1d9s*
+chown oracle:oinstall /dev/rdsk/c1d10s*
+chown oracle:oinstall /dev/rdsk/c1d11s*
+chown oracle:oinstall /dev/rdsk/c1d12s*
+chown oracle:oinstall /dev/rdsk/c1d13s*
+
+-- REDO02
+chown oracle:oinstall /dev/rdsk/c1d14s*
+chown oracle:oinstall /dev/rdsk/c1d15s*
+chown oracle:oinstall /dev/rdsk/c1d16s*
+chown oracle:oinstall /dev/rdsk/c1d17s*
+chown oracle:oinstall /dev/rdsk/c1d18s*
+chown oracle:oinstall /dev/rdsk/c1d19s*
+chown oracle:oinstall /dev/rdsk/c1d20s*
+chown oracle:oinstall /dev/rdsk/c1d21s*
+  
+
+
+
+
+  
+ -- runcluvy
+./runcluvfy.sh stage -pre hacfg (stand alone)
+
+
+
+o>. Install engine grid
+    **engine
+        - grid ( /grid/runInstaller)
+        - Install and Configure Grid Infrastructure for a Standalone Server
+        - language
+        - Disk group name = DATA
+          Redudancy = extrnal
+          add disk = candidate disk -> data
+
+        - CHECK Status : 
+            AS : Grid
+            crsctl status resource -t
+            crs_stat -t
+            reboot
+
+
+  **asmca
+      add datafile
+  
+
+
+
+
+o>. engine db
+. software only
+
+--- netca
+
+
+--- dbca
+        - General Purpose
+        - set sid
+        - em
+        - pwd
+        - storage type : asm +DATA
+            - Multiples redo log??????
+        - Fast Recovery = +FRA
+        - skip sample schema
+        - parameter next
+        - confirm next
+        - create database -> finish
+
+
+ 
+
+o>. DISK
+
+root@ICT-ORT-DEV02:~# format
+Searching for disks...done
+
+c0t60060E801234AC00504034AC00000400d0: configured with capacity of 1023.95GB
+c0t60060E801234AC00504034AC00000401d0: configured with capacity of 1023.95GB
+c0t60060E801234AC00504034AC00000402d0: configured with capacity of 1023.95GB
+c0t60060E801234AC00504034AC00000403d0: configured with capacity of 1023.95GB
+c0t60060E801234AC00504034AC00000404d0: configured with capacity of 1023.95GB
+c0t60060E801234AC00504034AC00000405d0: configured with capacity of 1023.95GB
+c0t60060E801234AC00504034AC00000406d0: configured with capacity of 1023.95GB
+c0t60060E801234AC00504034AC00000407d0: configured with capacity of 1023.95GB
+c0t60060E801234AC00504034AC00000408d0: configured with capacity of 1023.95GB
+c0t60060E801234AC00504034AC00000409d0: configured with capacity of 1023.95GB
+
+
+AVAILABLE DISK SELECTIONS:
+       0. c0t60060E801234AC00504034AC00000400d0 <HITACHI-OPEN-V      -SUN-8301 cyl 44556 alt 2 hd 255 sec 189>
+          /scsi_vhci/ssd@g60060e801234ac00504034ac00000400
+       1. c0t60060E801234AC00504034AC00000401d0 <HITACHI-OPEN-V      -SUN-8301 cyl 44556 alt 2 hd 255 sec 189>
+          /scsi_vhci/ssd@g60060e801234ac00504034ac00000401
+       2. c0t60060E801234AC00504034AC00000402d0 <HITACHI-OPEN-V      -SUN-8301 cyl 44556 alt 2 hd 255 sec 189>
+          /scsi_vhci/ssd@g60060e801234ac00504034ac00000402
+       3. c0t60060E801234AC00504034AC00000403d0 <HITACHI-OPEN-V      -SUN-8301 cyl 44556 alt 2 hd 255 sec 189>
+          /scsi_vhci/ssd@g60060e801234ac00504034ac00000403
+       4. c0t60060E801234AC00504034AC00000404d0 <HITACHI-OPEN-V      -SUN-8301 cyl 44556 alt 2 hd 255 sec 189>
+          /scsi_vhci/ssd@g60060e801234ac00504034ac00000404
+       5. c0t60060E801234AC00504034AC00000405d0 <HITACHI-OPEN-V      -SUN-8301 cyl 44556 alt 2 hd 255 sec 189>
+          /scsi_vhci/ssd@g60060e801234ac00504034ac00000405
+       6. c0t60060E801234AC00504034AC00000406d0 <HITACHI-OPEN-V      -SUN-8301 cyl 44556 alt 2 hd 255 sec 189>
+          /scsi_vhci/ssd@g60060e801234ac00504034ac00000406
+       7. c0t60060E801234AC00504034AC00000407d0 <HITACHI-OPEN-V      -SUN-8301 cyl 44556 alt 2 hd 255 sec 189>
+          /scsi_vhci/ssd@g60060e801234ac00504034ac00000407
+       8. c0t60060E801234AC00504034AC00000408d0 <HITACHI-OPEN-V      -SUN-8301 cyl 44556 alt 2 hd 255 sec 189>
+          /scsi_vhci/ssd@g60060e801234ac00504034ac00000408
+       9. c0t60060E801234AC00504034AC00000409d0 <HITACHI-OPEN-V      -SUN-8301 cyl 44556 alt 2 hd 255 sec 189>
+          /scsi_vhci/ssd@g60060e801234ac00504034ac00000409
+      10. c1d0 <Unknown-Unknown-0001-300.00GB>
+          /virtual-devices@100/channel-devices@200/disk@0
+      11. c1d1 <Unknown-Unknown-0001-300.00GB>
+          /virtual-devices@100/channel-devices@200/disk@
+
+ 0
+ls -lhL /dev/rdsk/c0t60060E801234AC00504034AC00000400d0s6
+ls -lhL /dev/rdsk/c0t60060E801234AC00504034AC00000401d0s6
+ls -lhL /dev/rdsk/c0t60060E801234AC00504034AC00000402d0s6
+ls -lhL /dev/rdsk/c0t60060E801234AC00504034AC00000403d0s6
+ls -lhL /dev/rdsk/c0t60060E801234AC00504034AC00000404d0s6
+ls -lhL /dev/rdsk/c0t60060E801234AC00504034AC00000405d0s6
+ls -lhL /dev/rdsk/c0t60060E801234AC00504034AC00000406d0s6
+ls -lhL /dev/rdsk/c0t60060E801234AC00504034AC00000407d0s6
+
+-- backup
+ls -lhL /dev/rdsk/c0t60060E801234AC00504034AC00000408d0s6
+ls -lhL /dev/rdsk/c0t60060E801234AC00504034AC00000409d0s6
+--
+
+
+chown grid:dba /dev/rdsk/c0t60060E801234AC00504034AC00000400d0s6
+chown grid:dba /dev/rdsk/c0t60060E801234AC00504034AC00000401d0s6
+chown grid:dba /dev/rdsk/c0t60060E801234AC00504034AC00000402d0s6
+chown grid:dba /dev/rdsk/c0t60060E801234AC00504034AC00000403d0s6
+chown grid:dba /dev/rdsk/c0t60060E801234AC00504034AC00000404d0s6
+chown grid:dba /dev/rdsk/c0t60060E801234AC00504034AC00000405d0s6
+chown grid:dba /dev/rdsk/c0t60060E801234AC00504034AC00000406d0s6
+chown grid:dba /dev/rdsk/c0t60060E801234AC00504034AC00000407d0s6
+chown grid:dba /dev/rdsk/c0t60060E801234AC00504034AC00000408d0s6
+chown grid:dba /dev/rdsk/c0t60060E801234AC00504034AC00000409d0s6
+
+
+
+chmod 660 /dev/rdsk/c0t60060E801234AC00504034AC00000400d0s6
+chmod 660 /dev/rdsk/c0t60060E801234AC00504034AC00000401d0s6
+chmod 660 /dev/rdsk/c0t60060E801234AC00504034AC00000402d0s6
+chmod 660 /dev/rdsk/c0t60060E801234AC00504034AC00000403d0s6
+chmod 660 /dev/rdsk/c0t60060E801234AC00504034AC00000404d0s6
+chmod 660 /dev/rdsk/c0t60060E801234AC00504034AC00000405d0s6
+chmod 660 /dev/rdsk/c0t60060E801234AC00504034AC00000406d0s6
+chmod 660 /dev/rdsk/c0t60060E801234AC00504034AC00000407d0s6
+chmod 660 /dev/rdsk/c0t60060E801234AC00504034AC00000408d0s6
+chmod 660 /dev/rdsk/c0t60060E801234AC00504034AC00000409d0s6
+
+
+
+----- s
+dd if=/dev/zero of=/dev/rdsk/c0t60060E801234AC00504034AC00000400d0s6 bs=8192 count=25000
+dd if=/dev/zero of=/dev/rdsk/c0t60060E801234AC00504034AC00000401d0s6 bs=8192 count=25000
+dd if=/dev/zero of=/dev/rdsk/c0t60060E801234AC00504034AC00000402d0s6 bs=8192 count=25000
+dd if=/dev/zero of=/dev/rdsk/c0t60060E801234AC00504034AC00000403d0s6 bs=8192 count=25000
+dd if=/dev/zero of=/dev/rdsk/c0t60060E801234AC00504034AC00000404d0s6 bs=8192 count=25000
+dd if=/dev/zero of=/dev/rdsk/c0t60060E801234AC00504034AC00000405d0s6 bs=8192 count=25000
+dd if=/dev/zero of=/dev/rdsk/c0t60060E801234AC00504034AC00000406d0s6 bs=8192 count=25000
+dd if=/dev/zero of=/dev/rdsk/c0t60060E801234AC00504034AC00000407d0s6 bs=8192 count=25000
+dd if=/dev/zero of=/dev/rdsk/c0t60060E801234AC00504034AC00000408d0s6 bs=8192 count=25000
+dd if=/dev/zero of=/dev/rdsk/c0t60060E801234AC00504034AC00000409d0s6 bs=8192 count=25000​
